@@ -1,6 +1,6 @@
 substitutions:
   device_name: p1-dongle
-  device_description: "P1 module to read your smart meter"
+  device_description: "P1 module to read your smart meter / Slimme meter"
   friendly_name: P1 Dongle
   
 esphome:
