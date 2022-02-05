@@ -27,15 +27,15 @@ api:
 ota:
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+#  ssid: !secret wifi_ssid
+#  password: !secret wifi_password
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
     
 dashboard_import:
-  package_import_url: github://mhendriks/DSMR-API-V2/manual/esphome/p1-dongle.yaml
+  package_import_url: github://mhendriks/esphome-p1/p1-dongle.yaml@main
   
 captive_portal:
 
