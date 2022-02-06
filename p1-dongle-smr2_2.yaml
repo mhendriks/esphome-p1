@@ -32,6 +32,7 @@ wifi:
 
   ap:
     ssid: ${device_name}
+    ap_timeout: 15s
 
 captive_portal:
 
