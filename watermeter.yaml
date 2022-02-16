@@ -1,0 +1,124 @@
+substitutions:
+  device_name: watermeter
+  device_description: Water meter sensor 
+  time_timezone: "Europe/Amsterdam"
+  version: "v22.02.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  name_add_mac_suffix: false
+  
+  project:
+    name: smartstuff.slimmelezer
+    version: ${version}
+  
+esp8266:
+  board: esp12e
+  restore_from_flash: true
+
+status_led:
+  pin:
+    number: 2
+    inverted: true
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/watermeter.yaml
+
+
+wifi:
+  ssid: !secret ssid
+  password: !secret password
+  
+  ap:
+    ssid: ${device_name}
+
+web_server:
+  port: 80
+  
+captive_portal:
+
+logger:
+  level: INFO
+
+ota:
+  reboot_timeout: 10min
+  num_attempts: 5
+
+api:
+  services:
+    - service: set_water_usage
+      variables:
+        meter_value: float
+      then:
+        - globals.set:
+            id: totalWaterUsage
+            value: !lambda "return ( meter_value ) ;"
+
+globals:
+  - id: totalWaterUsage
+    type: float
+    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '230.123' # beginstand van je watermeter 
+    
+sensor:
+  - platform: uptime
+    name: "Uptime"
+
+  - platform: pulse_counter
+    pin: 
+      number: 5
+      mode:
+        input: true
+        pullup: false
+    id: watermeter_pulse
+    name: "Watermeter pulse"
+    count_mode:
+      rising_edge: DISABLE
+      falling_edge: INCREMENT
+    state_class: measurement
+    update_interval: 1s
+    internal_filter: 100us
+    accuracy_decimals: 0
+  
+  - platform: template
+    id: watermeter_total
+    name: "Watermeter stand"
+    state_class: "total_increasing"
+    icon: mdi:water
+    update_interval: 1s
+    unit_of_measurement: m³
+    accuracy_decimals: 3
+    lambda: |-
+      if (id(watermeter_pulse).state > 0) {
+        id(totalWaterUsage) += 0.001;
+      }
+      return id(totalWaterUsage);
+
+text_sensor:
+  - platform: template
+    name: "version"
+    icon: "mdi:label-outline"
+    update_interval: 6h
+    lambda: |-
+      return {"${version}"};
+
+  - platform: wifi_info
+    ip_address:
+      name: IP-adres
+      icon: mdi:ip-network
+    ssid:
+      name: Netwerk
+      icon: mdi:access-point-network
+    mac_address:
+      name: Mac-adres
+      icon: mdi:folder-key-network-outline
+
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+
+button:  
+  - platform: restart
+    name: "Restart device"
+
