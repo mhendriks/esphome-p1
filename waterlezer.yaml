@@ -1,5 +1,5 @@
 substitutions:
-  device_name: watermeter
+  device_name: waterlezer
   device_description: Water meter sensor 
   version: "v22.02.1"
 
@@ -9,7 +9,7 @@ esphome:
   name_add_mac_suffix: false
   
   project:
-    name: smartstuff.watermeter
+    name: smartstuff.waterlezer
     version: ${version}
   
 esp8266:
@@ -22,12 +22,11 @@ status_led:
     inverted: true
 
 dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/watermeter.yaml
+  package_import_url: github://mhendriks/esphome-p1/waterlezer.yaml
 
 wifi:
   ssid: !secret ssid
-  password: !secret password
-  
+  password: !secret password  
   ap:
     ssid: ${device_name}
 
@@ -56,7 +55,7 @@ api:
 
 globals:
   - id: totalWaterUsage
-    type: float
+    type: int
     restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
     initial_value: '0'       # beginstand van je watermeter -> aanpassen via Home Assistant services
 
@@ -70,7 +69,7 @@ sensor:
       number: 5
       mode:
         input: true
-        pullup: false #v3.5 aanzetten
+        pullup: true #v3.5 aanzetten
     id: watermeter_pulse
     name: "Watermeter pulse"
     count_mode:
