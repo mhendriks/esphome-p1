@@ -14,6 +14,7 @@ De stappen om de waterlezer dongle aan te sluiten op uw netwerk en daarna op te 
 3) Koppel de dongle aan uw Wifi netwerk
 4) Configureer de dongle in Home Assistant
 5) Opgeven beginstand
+6) Historische gegevens
  
 **1. USB Adapter aansluiten**<br> 
 Sluit een 5V USB adapter aan op de usb micro aansluiting aan de zijkant van de dongle door middel van een USB micro kabel.</br>
@@ -27,7 +28,6 @@ Ook dient de sensor zo te zitten dat deze 1 keer per omwenteling een signaal opn
 Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie onderstaande montage wijze.
 
 <img src="afb/montage.jpeg" width="40%">
-
 
 >**TIP**<br>
 >Zet de kraan een beetje open om te checken of de sensor goed zit
@@ -74,7 +74,7 @@ Voer onderstaande stappen uit.<br>
 >**TIP**<br>
 >mocht waterlezer.local niet werken haal dan de dongel even 5 seconden uit de slimme meter of koppel de usb adapter los. Bij het opnieuw starten zal de dongle zich weer kenbaar maken.
 
-**Opgeven beginstand**<br>
+**5. Opgeven beginstand**<br>
 De watermeter wordt uitgelezen door bij elke ronde van de kleine wijzer 1 puls te versturen. Dit is in de meeste gevallen 1 liter water. Nu moet wel eerst de beginstand opgegeven worden van de watermeter. 
 Dit kan eenvoudig via Home Assistant door onderstaande stappen te volgen.<br>
 <br>
@@ -88,6 +88,34 @@ Zie scherm hieronder als voorbeeld.<br>
 Als het allemaal goed is gegaan is de dongle voorzien van een startstand. Zie onderstaande voorbeeld.
 <img src="afb/beginstand_2.png" width="50%"><br>
 
+**6.Historische gegevens**<br>
+Neem onderstaande configuratie op in de configuration.yaml. En verwerk deze in de dashboards van Home Assistant na reload/herstart van HA.<br>
+
+```
+utility_meter:  
+  waterverbruik_kwartier:
+    source: sensor.watermeter_total
+    cycle: quarter-hourly
+  waterverbruik_uur:
+    source: sensor.watermeter_total
+    cycle: hourly
+  waterverbruik_dag:
+    source: sensor.watermeter_total
+    cycle: daily    
+  waterverbruik_week:
+    source: sensor.watermeter_total
+    cycle: weekly
+  waterverbruik_maand:
+    source: sensor.watermeter_total
+    cycle: monthly
+  waterverbruik_kwartaal:
+    source: sensor.watermeter_total
+    cycle: quarterly
+  waterverbruik_jaar:
+    source: sensor.watermeter_total
+    cycle: yearly          
+```
+
 **OPTIONEEL ESPhome Dashboard**</br>
 Beheer van de dongle via het ESPhome dashboard. 
 Hieronder is de module te zien.<br>
@@ -99,19 +127,14 @@ Indien deze niet zichtbaar is kan deze toegevoegd worden door op [+ NEW DEVICE] 
 
 Zelf de configuratie aanpassen kan eenvoudig zie "Zelf aanpassingen maken in de configuratie".
 <br>
-# **Eindresultaat**<br>
-Daarna kan in Energie en in de Home pagina de rest van de configuratie gemaakt worden. Bijvoorbeeld zoals hieronder.
-
-<img src="afb/home.png" width="70%">
-
 
 # **Zelf aanpassingen maken in de configuratie**<br>
-In de ESPHome dashboard waarin u zelf de diverse modules kunt beheren kunt u de p1-dongle zien, toevoegen en bewerken.
-Onder Edit kan de configuratie worden aangepast. In het bestand [p1-dongle.yaml](p1-dongle.yaml) kunt u de standaard configuratie zien.
+In de ESPHome dashboard waarin u zelf de diverse modules kunt beheren kunt u de dongle zien, toevoegen en bewerken.
+Onder Edit kan de configuratie worden aangepast. In het bestand [waterlezer.yaml](waterlezer.yaml) kunt u de standaard configuratie zien.
 
 # **Flashen**<br>
-Flashen dient via een FTDI interface te gebeuren (max 460800 baud). Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
-De pinout (v3.3 hardware) is :
+Voor het flashen heeft u een USB - TTL adapter nodig. Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
+De pinout van de v3.3 hardware is hieronder te zien.
 
 <img src="afb/V3.3_onderkant.png" width="15%">
 
