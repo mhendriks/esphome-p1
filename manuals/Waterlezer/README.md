@@ -30,7 +30,7 @@ Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie on
 <img src="afb/montage.jpeg" width="40%">
 
 >**TIP**<br>
->Zet de kraan een beetje open om te checken of de sensor goed zit
+>Zet de kraan een beetje open om te checken of de sensor goed zit.<br>
 >monteer de sensor met het kruis / rode ledje naar de wijzerplaat toe.
  
 **3. Koppel Dongle aan uw Wifi netwerk**<br>
