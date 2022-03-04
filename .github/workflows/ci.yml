@@ -12,7 +12,7 @@ jobs:
         file:
           - p1-dongle.yaml
           - p1-dongle-smr2_2.yaml
-          - watermeter.yaml
+          - waterlezer.yaml
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
