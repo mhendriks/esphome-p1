@@ -31,6 +31,7 @@ Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie on
 
 >**TIP**<br>
 >Zet de kraan een beetje open om te checken of de sensor goed zit
+>monteer de sensor met het kruis / rode ledje naar de wijzerplaat toe.
  
 **3. Koppel Dongle aan uw Wifi netwerk**<br>
 Na aansluiten van sensor en adapter is het zaak om de dongle te koppelen aan uw wifinetwerk. Hiervoor bouwt de dongle een eigen Wifi hotspot op. Deze hotspot is te herkennen door de Wifinaam **waterlezer**.
