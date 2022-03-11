@@ -27,7 +27,7 @@ Watermeters met een metalen plaatje op de kleine wijzer zijn geschikt voor deze 
 Ook dient de sensor zo te zitten dat deze 1 keer per omwenteling een signaal opneemt. Dit kan je aan de sensor zien doordat het rode lampje gaat branden. Sensor zit normaal gesproken recht boven deze wijzer maar dan iets verschoven van het midden van deze wijzer.
 Maak de sensor vast met meegeleverde klittenband of met de sensor houder, zie onderstaande montage wijze.
 
-<img src="afb/montage.jpeg" width="40%">
+<img src="afb/montage_sensor.png" width="40%">
 
 >**TIP**<br>
 >Zet de kraan een beetje open om te checken of de sensor goed zit.<br>
