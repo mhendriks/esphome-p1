@@ -58,7 +58,6 @@ Voer onderstaande stappen uit in Home Assistant Instellingen > Apparaten & Diens
 <img src="afb/integratie_1.png" width="40%"><br>
 <img src="afb/integratie_2.png" width="40%"><br>
 <img src="afb/integratie_3.png" width="40%"><br>
-<img src="afb/hand_4.png" width="40%"><br>
 <img src="afb/hand_5.png" width="40%"><br>
 <br>
 3.2. Handmatig toevoegen</br>
@@ -122,7 +121,7 @@ Beheer van de dongle via het ESPhome dashboard.
 Hieronder is de module te zien.<br>
 <img src="afb/esphome_dash.png" width="50%"><br>
 
-Indien deze niet zichtbaar is kan deze toegevoegd worden door op [+ NEW DEVICE] knop te klikken rechtsonder aan. Volg dan de stappen hieronder.<br>
+Indien deze niet zichtbaar is kan deze toegevoegd worden door op [+ NEW DEVICE] knop te klikken rechtsonder aan. Volg dan de stappen hieronder. Voer bij name waterlezer in.<br>
 <img src="afb/esphome_dash_1.png" width="40%"><br>
 <img src="afb/esphome_dash_2.png" width="40%"><br>
 
@@ -135,9 +134,9 @@ Onder Edit kan de configuratie worden aangepast. In het bestand [waterlezer.yaml
 
 # **Flashen**<br>
 Voor het flashen heeft u een USB - TTL adapter nodig. Op J2 (onderkant) zitten de aansluitingen voor deze interface. 
-De pinout van de v3.3 hardware is hieronder te zien.
+De pinout van de v3.5 hardware is hieronder te zien.
 
-<img src="afb/V3.3_onderkant.png" width="15%">
+<img src="afb/3.4onder.png" width="15%">
 
 1. RX
 2. TX
