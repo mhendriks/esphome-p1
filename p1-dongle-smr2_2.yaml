@@ -94,18 +94,6 @@ sensor:
     electricity_long_failures:
       name: "Long Electricity Failures"
       icon: mdi:alert
-    voltage_l1:
-      name: "Voltage Phase 1"
-    voltage_l2:
-      name: "Voltage Phase 2"
-    voltage_l3:
-      name: "Voltage Phase 3"
-    current_l1:
-      name: "Current Phase 1"
-    current_l2:
-      name: "Current Phase 2"
-    current_l3:
-      name: "Current Phase 3"
     power_delivered_l1:
       name: "Power Consumed Phase 1"
       unit_of_measurement: "W"
@@ -151,9 +139,6 @@ sensor:
     gas_delivered:
       name: "Gas Consumed"
       state_class: total_increasing
-    gas_delivered_be:
-      name: "Gas Consumed Belgium"
-      state_class: total_increasing
   - platform: uptime
     name: "Uptime"
   - platform: wifi_signal
@@ -166,8 +151,8 @@ text_sensor:
       name: "DSMR Identification"
     p1_version:
       name: "DSMR Version"
-    p1_version_be:
-      name: "DSMR Version Belgium"
+    gas_delivered_text:
+      name: "gas delivered raw"
   - platform: wifi_info
     ip_address:
       name: "IP Address"
