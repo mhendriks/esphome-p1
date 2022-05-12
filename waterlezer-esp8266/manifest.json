@@ -2,7 +2,7 @@
   "chipFamily": "ESP8266",
   "parts": [
     {
-      "path": "waterlezer-esp8266/firmware.bin",
+      "path": "waterlezer-esp8266/waterlezer-esp8266.bin",
       "offset": 0
     }
   ]

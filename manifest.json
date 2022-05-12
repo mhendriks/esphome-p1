@@ -1,6 +1,6 @@
 {
   "name": "Dongles",
-  "version": "2022.3.0",
+  "version": "2022.4.0",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
@@ -8,7 +8,7 @@
       "chipFamily": "ESP8266",
       "parts": [
         {
-          "path": "p1-dongle-esp8266/firmware.bin",
+          "path": "p1-dongle-esp8266/p1-dongle-esp8266.bin",
           "offset": 0
         }
       ]
@@ -17,7 +17,7 @@
       "chipFamily": "ESP8266",
       "parts": [
         {
-          "path": "waterlezer-esp8266/firmware.bin",
+          "path": "waterlezer-esp8266/waterlezer-esp8266.bin",
           "offset": 0
         }
       ]
