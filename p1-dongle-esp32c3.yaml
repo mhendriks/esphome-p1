@@ -1,7 +1,7 @@
 substitutions:
   device_name: p1-dongle
   device_description: "P1 ESP32c3 module to read your smart meter"
-
+  friendly_name: P1 Dongle Pro
 esphome:
   name: ${device_name}
   comment: "${device_description}" 
@@ -12,7 +12,7 @@ esphome:
   platformio_options:
 #    board_build.flash_mode: dio
     platform_packages:
-      - framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#2.0.2
+      - framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#2.0.3
     platform:
       - https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
     
