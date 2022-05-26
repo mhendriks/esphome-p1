@@ -1,6 +1,6 @@
 {
   "name": "Dongles",
-  "version": "2022.5.0",
+  "version": "2022.5.1",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
