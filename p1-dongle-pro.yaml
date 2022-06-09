@@ -1,6 +1,6 @@
 substitutions:
   device_name: p1-dongle-pro
-  device_description: "P1 Pro (ESP32) module to read your smart meter"
+  device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
 esphome:
   name: ${device_name}
@@ -10,7 +10,8 @@ esphome:
     name: "smartstuff.p1dongle_pro"
     version: "0.9.5"
   platformio_options:
-    platform: espressif32 @ ~4.3.0
+    platform: espressif32@4.3.0
+    upload_speed: 921600
     
 esp32:
   board: esp32-c3-devkitm-1

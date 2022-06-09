@@ -55,14 +55,18 @@ api:
       then:
         - globals.set:
             id: last_usage
-            value: !lambda 'ESP_LOGI("Service", "Restored value: %f", meter_value); return meter_value;'
-#        - logger.log: --> S0 total counter has now new value!
+            value: !lambda 'ESP_LOGI("Service", "Restored value: %f", meter_value); return (meter_value - id(tot_count) );'
         
 globals:
   - id: last_usage
     type: float
     restore_value: true  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
     initial_value: '0'   # beginstand  -> aanpassen via Home Assistant services
+  - id: tot_count
+    type: float
+    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'   # beginstand  -> aanpassen via Home Assistant services
+
         
 button:  
   - platform: restart
@@ -71,7 +75,7 @@ button:
 sensor:
   - platform: pulse_counter
     pin: 
-      number: 14
+      number: 5
       mode:
         input: true
         pullup: true #v3.5 aanzetten
@@ -85,11 +89,13 @@ sensor:
       - multiply: 0.06 # (60s/1000 pulses per kWh)
     total:
       name: "S0 Total Energy"
+      id: pulse_tot
       unit_of_measurement: "kWh"
       accuracy_decimals: 3
       filters:
         - multiply: 0.001
         - lambda: |-
+             id(tot_count) = x;
              return id(last_usage) + x;
         - filter_out: NAN
 
