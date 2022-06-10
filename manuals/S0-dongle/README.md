@@ -10,7 +10,7 @@ Hieronder de stap voor stap integratie met Home Assistant.
 De stappen om de dongle aan te sluiten op uw netwerk en daarna op te nemen in Home Assistant staan hieronder.
 
 1) Sluit een usb adapter aan op de dongle
-2) monteer de sensor op de watermeter
+2) Sluit de dongle aan op de kWh meter
 3) Koppel de dongle aan uw Wifi netwerk
 4) Configureer de dongle in Home Assistant
 5) Opgeven beginstand
