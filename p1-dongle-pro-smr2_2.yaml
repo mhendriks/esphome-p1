@@ -40,15 +40,15 @@ ota:
 
 wifi:
 
-# Enable fallback hotspot (captive portal) in case wifi connection fails
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
 
-dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro.yaml@main
-  
 captive_portal:
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro-smr2_2.yaml
 
 web_server:
   port: 80
@@ -58,22 +58,22 @@ logger:
   level: DEBUG
 
 uart:
+  baud_rate: 9600
+  data_bits: 7
+  parity: EVEN
+  stop_bits: 1
   rx_pin:
     number: 10
     inverted: true
-  baud_rate: 115200
-  rx_buffer_size: 1700
   
 dsmr:
- id: dsmr_instance
- receive_timeout: 200ms
- max_telegram_length: 1700
+  crc_check: false
 
 button:  
   - platform: restart
     name: "Reboot device" 
     id: reboot
-      
+
 sensor:
   - platform: dsmr
 #    energy_delivered_lux:
@@ -114,18 +114,6 @@ sensor:
     electricity_long_failures:
       name: "Long Electricity Failures"
       icon: mdi:alert
-    voltage_l1:
-      name: "Voltage Phase 1"
-    voltage_l2:
-      name: "Voltage Phase 2"
-    voltage_l3:
-      name: "Voltage Phase 3"
-    current_l1:
-      name: "Current Phase 1"
-    current_l2:
-      name: "Current Phase 2"
-    current_l3:
-      name: "Current Phase 3"
     power_delivered_l1:
       name: "Power Consumed Phase 1"
       unit_of_measurement: "W"
@@ -171,9 +159,6 @@ sensor:
     gas_delivered:
       name: "Gas Consumed"
       state_class: total_increasing
-    gas_delivered_be:
-      name: "Gas Consumed Belgium"
-      state_class: total_increasing
   - platform: uptime
     name: "Uptime"
   - platform: wifi_signal
@@ -186,8 +171,8 @@ text_sensor:
       name: "DSMR Identification"
     p1_version:
       name: "DSMR Version"
-    p1_version_be:
-      name: "DSMR Version Belgium"
+    gas_delivered_text:
+      name: "gas delivered raw"
   - platform: wifi_info
     ip_address:
       name: "IP Address"
