@@ -1,44 +1,53 @@
 substitutions:
-  device_name: p1-dongle
-  device_description: "P1 ESP32c3 module to read your smart meter"
+  device_name: p1-dongle-pro
+  device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
+  prj_version: "2022.6.1"
+
+external_components:
+  - source: github://mhendriks/esphome-p1@main
+    components: [dsmr]
+
 esphome:
   name: ${device_name}
   comment: "${device_description}" 
   name_add_mac_suffix: false
   project: 
-    name: "smartstuff.p1dongle_esp32c3"
-    version: "0.9.0"
+    name: "smartstuff.p1_dongle_pro"
+    version: ${prj_version}
   platformio_options:
-#    board_build.flash_mode: dio
-    platform_packages:
-      - framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#2.0.3
-    platform:
-      - https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
+    upload_speed: 921600
+    platform: espressif32@4.3.0
     
 esp32:
   board: esp32-c3-devkitm-1
   framework: 
     type: arduino
+    version: 2.0.3
     
 status_led:
- pin:
-   number: 7
-   inverted: true
-    
-api:
+  pin:
+    number: 7
+    inverted: true
 
+api:
+  services:
+    - service: p1_dongle_reboot
+      then:
+        - button.press:
+            id: reboot
 ota:
 
 wifi:
+
 # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
 
 dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/p1-dongle-esp32c3.yaml
-
+  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro.yaml@main
+  
 captive_portal:
 
 web_server:
@@ -47,7 +56,6 @@ web_server:
 # Enable logging
 logger:
   level: DEBUG
-  baud_rate: 0
 
 uart:
   rx_pin:
@@ -61,7 +69,11 @@ dsmr:
  receive_timeout: 200ms
  max_telegram_length: 1700
 
-  
+button:  
+  - platform: restart
+    name: "Reboot device" 
+    id: reboot
+      
 sensor:
   - platform: dsmr
 #    energy_delivered_lux:
