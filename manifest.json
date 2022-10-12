@@ -14,6 +14,15 @@
       ]
     },
     {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "p1-dongle-pro-esp32/p1-dongle-pro-esp32.bin",
+          "offset": 0
+        }
+      ]
+    },
+    {
       "chipFamily": "ESP8266",
       "parts": [
         {
