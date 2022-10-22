@@ -1,0 +1,212 @@
+substitutions:
+  device_name: eth-dongle
+  device_description: "P1 Dongle with ethernet access"
+  friendly_name: ETH Dongle P1
+  prj_version: "2022.10.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  platform: ESP32
+  board: esp-wrover-kit
+  platformio_options:
+    upload_speed: 921600
+  project: 
+    name: "smartstuff.eth_dongle"
+    version: ${prj_version}
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin: GPIO16
+
+ota:
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/eth-dongle-p1-s0.yaml@main
+
+# Enable logging
+logger:
+  level: INFO
+
+globals:
+  - id: tot_count
+    type: float
+    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'   # beginstand  -> aanpassen via Home Assistant services
+  - id: pulse_rate
+    type: int
+    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '1000'   # pulse rate van de kWh meter -> xxx pulses / kWh
+    
+# Enable Home Assistant API
+api:
+  services:
+    - service: eth_dongle_reboot
+      then:
+        - button.press:
+            id: reboot
+web_server:
+  port: 80
+  
+uart:
+  rx_pin:
+    number: 15
+    inverted: true
+  baud_rate: 115200
+  rx_buffer_size: 1700
+  
+dsmr:
+ id: dsmr_instance
+ receive_timeout: 200ms
+ max_telegram_length: 1700
+
+button:  
+  - platform: restart
+    name: "_Reboot device" 
+    id: reboot
+      
+sensor:
+  - platform: pulse_meter
+    pin: 
+      number: 14
+      mode:
+        input: true
+        pullup: true #v3.5 aanzetten
+    id: pulse
+    state_class: measurement
+    unit_of_measurement: 'W'
+    device_class: power
+    internal_filter: 100ms
+    internal_filter_mode: EDGE    
+    icon: mdi:flash-outline
+    filters:
+      #- multiply: 0.06 # (60s/1000 pulses per kWh)
+      - lambda: return x * ((60.0 / id(pulse_rate)) * 1000.0);
+    total:
+      name: "S0 Total Energy"
+      id: pulse_tot
+      unit_of_measurement: "kWh"
+      icon: mdi:circle-slice-3
+      state_class: total_increasing
+      device_class: energy
+      accuracy_decimals: 3
+      filters:
+        - lambda: return x * (1.0 / id(pulse_rate));
+
+
+  - platform: dsmr
+#    energy_delivered_lux:
+#      name: "Energy Consumed Luxembourg"
+#      state_class: total_increasing
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+#    energy_returned_lux:
+#      name: "Energy Produced Luxembourg"
+#      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned:
+      name: "Power Produced"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    electricity_failures:
+      name: "Electricity Failures"
+      icon: mdi:alert
+    electricity_long_failures:
+      name: "Long Electricity Failures"
+      icon: mdi:alert
+    voltage_l1:
+      name: "Voltage Phase 1"
+    voltage_l2:
+      name: "Voltage Phase 2"
+    voltage_l3:
+      name: "Voltage Phase 3"
+    current_l1:
+      name: "Current Phase 1"
+    current_l2:
+      name: "Current Phase 2"
+    current_l3:
+      name: "Current Phase 3"
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l1:
+      name: "Power Produced Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l2:
+      name: "Power Produced Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l3:
+      name: "Power Produced Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    gas_delivered:
+      name: "Gas Consumed"
+      state_class: total_increasing
+    gas_delivered_be:
+      name: "Gas Consumed Belgium"
+      state_class: total_increasing
+  - platform: uptime
+    name: "_Uptime"
+      
+text_sensor:
+  - platform: dsmr
+    identification:
+      name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    p1_version_be:
+      name: "DSMR Version Belgium"
+  - platform: version
+    name: "_ESPHome Version"
+    hide_timestamp: true
