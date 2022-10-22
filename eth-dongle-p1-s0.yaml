@@ -71,10 +71,10 @@ button:
 sensor:
   - platform: pulse_meter
     pin: 
-      number: 14
+      number: 39
       mode:
         input: true
-        pullup: true #v3.5 aanzetten
+#         pullup: true #v3.5 aanzetten
     id: pulse
     state_class: measurement
     unit_of_measurement: 'W'
