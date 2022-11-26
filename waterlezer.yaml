@@ -1,12 +1,14 @@
 substitutions:
   device_name: waterlezer
   device_description: Water meter sensor 
-  version: "v22.11.1"
+  version: "v22.11.2"
 
 esphome:
   name: ${device_name}
   comment: "${device_description}" 
   name_add_mac_suffix: false
+  platformio_options:
+    upload_speed: 921600
   
   project:
     name: smartstuff.waterlezer
@@ -32,7 +34,6 @@ wifi:
     ssid: ${device_name}
 
 web_server:
-  port: 80
   
 captive_portal:
 
