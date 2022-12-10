@@ -1,7 +1,7 @@
 substitutions:
   device_name: waterlezer
   device_description: Water meter sensor 
-  version: "v22.11.2"
+  version: "v22.12.1"
 
 esphome:
   name: ${device_name}
@@ -63,7 +63,9 @@ globals:
 
 button:  
   - platform: restart
-    name: "Restart device"
+    name: "_Restart device"
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
     
 sensor:
   - platform: pulse_counter
@@ -111,7 +113,7 @@ text_sensor:
       icon: mdi:folder-key-network-outline
       
   - platform: template
-    name: "version"
+    name: "Config Version"
     icon: "mdi:label-outline"
     update_interval: 6h
     lambda: return {"${version}"};
