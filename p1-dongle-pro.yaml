@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
-  prj_version: "2022.10.0"
+  prj_version: "v22.12.2"
 
 esphome:
   name: ${device_name}
@@ -12,7 +12,7 @@ esphome:
     name: "smartstuff.p1_dongle_pro"
     version: ${prj_version}
   platformio_options:
-    upload_speed: 921600
+    upload_speed: 1500000
     
 esp32:
   board: esp32-c3-devkitm-1
@@ -63,8 +63,10 @@ dsmr:
 
 button:  
   - platform: restart
-    name: "Reboot device" 
+    name: "_Restart device"
     id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
       
 sensor:
   - platform: dsmr
@@ -74,9 +76,11 @@ sensor:
     energy_delivered_tariff1:
       name: "Energy Consumed Tariff 1"
       state_class: total_increasing
+      device_class: energy
     energy_delivered_tariff2:
       name: "Energy Consumed Tariff 2"
       state_class: total_increasing
+      device_class: energy
 #    energy_returned_lux:
 #      name: "Energy Produced Luxembourg"
 #      state_class: total_increasing
