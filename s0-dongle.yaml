@@ -2,7 +2,7 @@ substitutions:
   device_name: s0-dongle
   device_description: "S0 module to read S0 interfaces (pulse counters)"
   friendly_name: S0-Dongle
-  p_version: "2022.6.1"
+  p_version: "v22.12.1"
 
 esphome:
   name: ${device_name}
@@ -11,6 +11,10 @@ esphome:
   project:
     name: smartstuff.s0-dongle
     version: ${p_version}
+
+external_components:
+  - source: github://pr#3321
+    components: [pulse_meter]
   
 esp8266:
   board: esp12e
@@ -69,12 +73,15 @@ globals:
     type: int
     restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
     initial_value: '1000'   # pulse rate van de kWh meter -> xxx pulses / kWh
-            
+
+          
 button:  
   - platform: restart
-    name: "Restart device"  
+    name: "_Restart device"
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"  
   - platform: template
-    name: "Reset - Total Energy"
+    name: "_Reset - Total Energy Counter"
     id: button_reset_total
     on_press:
       - pulse_meter.set_total_pulses:
@@ -92,6 +99,8 @@ sensor:
     state_class: measurement
     unit_of_measurement: 'W'
     device_class: power
+    internal_filter: 100ms
+    internal_filter_mode: EDGE    
     icon: mdi:flash-outline
     filters:
       #- multiply: 0.06 # (60s/1000 pulses per kWh)
@@ -142,7 +151,7 @@ text_sensor:
       icon: mdi:folder-key-network-outline
       
   - platform: template
-    name: "S0 Version"
+    name: "Config Version"
     icon: "mdi:label-outline"
     update_interval: 6h
     lambda: return {"$p_version"};

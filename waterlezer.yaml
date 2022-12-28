@@ -1,7 +1,7 @@
 substitutions:
   device_name: waterlezer
   device_description: Water meter sensor 
-  version: "v22.12.1"
+  version: "v22.12.2"
 
 esphome:
   name: ${device_name}
@@ -96,6 +96,9 @@ sensor:
     lambda: |-
       if (id(watermeter_pulse).state > 0) id(totalWaterUsage) += 1;
       return id(totalWaterUsage);
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    update_interval: 60s
 
   - platform: uptime
     name: "Uptime"
@@ -111,6 +114,7 @@ text_sensor:
     mac_address:
       name: Mac-adres
       icon: mdi:folder-key-network-outline
+      
       
   - platform: template
     name: "Config Version"
