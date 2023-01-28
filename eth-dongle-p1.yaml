@@ -2,15 +2,15 @@ substitutions:
   device_name: eth-dongle
   device_description: "P1 Dongle with ethernet access"
   friendly_name: ETH Dongle P1
-  prj_version: "2022.12.1"
+  prj_version: "2023.1.2"
 
 esphome:
   name: ${device_name}
   comment: "${device_description}" 
   platform: ESP32
-  board: esp-wrover-kit
+  board: wt32-eth01
   platformio_options:
-    upload_speed: 921600
+    upload_speed: 1500000
   project: 
     name: "smartstuff.eth_dongle"
     version: ${prj_version}

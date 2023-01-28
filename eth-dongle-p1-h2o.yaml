@@ -14,6 +14,7 @@ esphome:
   project: 
     name: "smartstuff.eth_dongle"
     version: ${prj_version}
+    
 ethernet:
   type: LAN8720
   mdc_pin: GPIO23
@@ -23,24 +24,21 @@ ethernet:
   power_pin: GPIO16
 
 ota:
+web_server:
 
 dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/eth-dongle-p1-s0.yaml@main
+  package_import_url: github://mhendriks/esphome-p1/eth-dongle-p1.yaml@main
 
 # Enable logging
 logger:
-  level: INFO
+  level: DEBUG
 
 globals:
-  - id: tot_count
-    type: float
-    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
-    initial_value: '0'   # beginstand  -> aanpassen via Home Assistant services
-  - id: pulse_rate
+  - id: totalWaterUsage
     type: int
-    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
-    initial_value: '1000'   # pulse rate van de kWh meter -> xxx pulses / kWh
-    
+    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'       # beginstand van je watermeter -> aanpassen via Home Assistant services
+   
 # Enable Home Assistant API
 api:
   services:
@@ -48,54 +46,54 @@ api:
       then:
         - button.press:
             id: reboot
-web_server:
-  port: 80
   
 uart:
   rx_pin:
     number: 15
     inverted: true
   baud_rate: 115200
+  # Prevents checksum errors (see https://github.com/esphome/issues/issues/2577#issuecomment-949409869)
   rx_buffer_size: 1700
   
 dsmr:
- id: dsmr_instance
- receive_timeout: 200ms
- max_telegram_length: 1700
 
 button:  
   - platform: restart
-    name: "_Reboot device" 
+    name: "_Restart device"
     id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+ 
       
 sensor:
-  - platform: pulse_meter
+  - platform: pulse_counter
     pin: 
-      number: 39
+      number: 4
       mode:
         input: true
-#         pullup: true #v3.5 aanzetten
-    id: pulse
+        pullup: true 
+    id: watermeter_pulse
+    name: "Watermeter pulse"
+    count_mode:
+      rising_edge: DISABLE
+      falling_edge: INCREMENT
     state_class: measurement
-    unit_of_measurement: 'W'
-    device_class: power
-    internal_filter: 100ms
-    internal_filter_mode: EDGE    
-    icon: mdi:flash-outline
-    filters:
-      #- multiply: 0.06 # (60s/1000 pulses per kWh)
-      - lambda: return x * ((60.0 / id(pulse_rate)) * 1000.0);
-    total:
-      name: "S0 Total Energy"
-      id: pulse_tot
-      unit_of_measurement: "kWh"
-      icon: mdi:circle-slice-3
-      state_class: total_increasing
-      device_class: energy
-      accuracy_decimals: 3
-      filters:
-        - lambda: return x * (1.0 / id(pulse_rate));
-
+    update_interval: 1s
+#     internal_filter: 100us
+    accuracy_decimals: 0
+    unit_of_measurement: 'L/min'
+  
+  - platform: template
+    name: "Watermeter total"
+    state_class: "total_increasing"
+    device_class: "water"
+    icon: mdi:water
+    update_interval: 5s
+    unit_of_measurement: L
+    accuracy_decimals: 0
+    lambda: |-
+      if (id(watermeter_pulse).state > 0) id(totalWaterUsage) += 1;
+      return id(totalWaterUsage);
 
   - platform: dsmr
 #    energy_delivered_lux:
