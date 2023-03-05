@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
-  prj_version: "v23.02.1"
+  prj_version: "v23.03.1"
 
 esphome:
   name: ${device_name}
@@ -47,11 +47,10 @@ dashboard_import:
 captive_portal:
 
 web_server:
-  port: 80
   
 # Enable logging
 logger:
-  level: INFO
+  level: DEBUG
 
 uart:
   rx_pin:
