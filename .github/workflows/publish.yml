@@ -12,4 +12,4 @@ jobs:
       # CHANGEME: Set the filenames of your config files here:
       files: p1-dongle.yaml,p1-dongle-smr2_2.yaml,waterlezer.yaml, p1-dongle-pro.yaml, p1-dongle-pro-smr2_2.yaml
       # CHANGEME: Set the name of your project here:
-      name: Dongles
+      name: P1 Dongles
