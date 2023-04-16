@@ -1,0 +1,184 @@
+substitutions:
+  device_name: eth-dongle-pro
+  device_description: "P1 Dongle Pro with ethernet access"
+  friendly_name: ETH Dongle Pro
+  prj_version: "2023.4.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  platformio_options:
+    upload_speed: 1500000
+    board_build.flash_mode: dio
+    
+  project: 
+    name: "smartstuff.eth_dongle_pro"
+    version: ${prj_version}
+
+esp32:
+  board: esp32-c3-devkitm-1
+
+external_components:
+  - source: my_components
+    components: [ ethernet ]
+      
+ethernet:
+  type: W5500
+  cs_pin: 10
+  clk_pin: 4
+  mosi_pin: 6
+  miso_pin: 5
+  interrupt_pin: 1
+  clock_speed: 25
+#   manual_ip:
+#     static_ip: 192.168.2.123
+#     gateway: 192.168.2.1
+#     subnet: 255.255.255.0
+     
+ota:
+
+web_server:
+    
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/eth-dongle-pro.yaml@main
+
+# Enable logging
+logger:
+  level: ERROR
+
+# Enable Home Assistant API
+api:
+  
+uart:
+  rx_pin:
+    number: 7
+    inverted: true
+  baud_rate: 115200
+  rx_buffer_size: 1700
+
+dsmr:
+ id: dsmr_instance
+ receive_timeout: 200ms
+ max_telegram_length: 1700
+
+button:  
+  - platform: restart
+    name: "_Restart device"
+    id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+      
+sensor:
+  - platform: dsmr
+# #    energy_delivered_lux:
+# #      name: "Energy Consumed Luxembourg"
+# #      state_class: total_increasing
+# #    energy_returned_lux:
+# #      name: "Energy Produced Luxembourg"
+# #      state_class: total_increasing
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned:
+      name: "Power Produced"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    electricity_failures:
+      name: "Electricity Failures"
+      icon: mdi:alert
+    electricity_long_failures:
+      name: "Long Electricity Failures"
+      icon: mdi:alert
+    voltage_l1:
+      name: "Voltage Phase 1"
+    voltage_l2:
+      name: "Voltage Phase 2"
+    voltage_l3:
+      name: "Voltage Phase 3"
+    current_l1:
+      name: "Current Phase 1"
+    current_l2:
+      name: "Current Phase 2"
+    current_l3:
+      name: "Current Phase 3"
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l1:
+      name: "Power Produced Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l2:
+      name: "Power Produced Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l3:
+      name: "Power Produced Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    gas_delivered:
+      name: "Gas Consumed"
+      state_class: total_increasing
+    gas_delivered_be:
+      name: "Gas Consumed Belgium"
+      state_class: total_increasing
+  - platform: uptime
+    name: "_Uptime"
+      
+text_sensor:
+  - platform: dsmr
+    identification:
+      name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    p1_version_be:
+      name: "DSMR Version Belgium"
+  - platform: version
+    name: "_ESPHome Version"
+    hide_timestamp: true
