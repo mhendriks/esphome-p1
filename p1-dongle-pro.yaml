@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
-  prj_version: "v23.03.1"
+  prj_version: "v23.02.1"
 
 esphome:
   name: ${device_name}
@@ -16,10 +16,10 @@ esphome:
     
 esp32:
   board: esp32-c3-devkitm-1
-  framework: 
-    type: arduino
-    version: 2.0.6
-    platform_version: 4.4.0
+#   framework:
+#     type: arduino
+#     version: 2.0.6
+#     platform_version: 4.4.0
     
 status_led:
   pin:
@@ -47,10 +47,11 @@ dashboard_import:
 captive_portal:
 
 web_server:
+  port: 80
   
 # Enable logging
 logger:
-  level: DEBUG
+  level: INFO
 
 uart:
   rx_pin:
