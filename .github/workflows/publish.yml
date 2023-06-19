@@ -10,6 +10,7 @@ jobs:
     uses: esphome/workflows/.github/workflows/publish.yml@main
     with:
       # CHANGEME: Set the filenames of your config files here:
-      files: p1-dongle.yaml,p1-dongle-smr2_2.yaml,waterlezer.yaml, p1-dongle-pro.yaml, p1-dongle-pro-smr2_2.yaml
+      #files: p1-dongle.yaml,p1-dongle-smr2_2.yaml,waterlezer.yaml, p1-dongle-pro.yaml, p1-dongle-pro-smr2_2.yaml
+      files: p1-dongle-pro.yaml, p1-dongle-pro-smr2_2.yaml, eth-dongle-pro.yaml
       # CHANGEME: Set the name of your project here:
       name: P1 Dongles

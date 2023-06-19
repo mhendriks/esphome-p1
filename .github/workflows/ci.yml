@@ -10,11 +10,12 @@ jobs:
     strategy:
       matrix:
         file:
-          - p1-dongle.yaml
-          - p1-dongle-smr2_2.yaml
-          - waterlezer.yaml
+#           - p1-dongle.yaml
+#           - p1-dongle-smr2_2.yaml
+#           - waterlezer.yaml
           - p1-dongle-pro.yaml
           - p1-dongle-pro-smr2_2.yaml
+          - eth-dongle-pro.yaml
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
