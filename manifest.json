@@ -1,5 +1,5 @@
 {
-  "name": "P1 Dongles",
+  "name": "P1 Dongles Pro",
   "version": "",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
@@ -18,6 +18,15 @@
       "parts": [
         {
           "path": "p1-dongle-pro-esp32/p1-dongle-pro-esp32.bin",
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "p1-dongle-pro-smr2-esp32/p1-dongle-pro-smr2-esp32.bin",
           "offset": 0
         }
       ]
