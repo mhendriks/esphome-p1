@@ -5,10 +5,10 @@
   "new_install_skip_erase": false,
   "builds": [
     {
-      "chipFamily": "ESP8266",
+      "chipFamily": "ESP32-C3",
       "parts": [
         {
-          "path": "p1-dongle-esp8266/p1-dongle-esp8266.bin",
+          "path": "eth-dongle-pro-esp32/eth-dongle-pro-esp32.bin",
           "offset": 0
         }
       ]
@@ -18,15 +18,6 @@
       "parts": [
         {
           "path": "p1-dongle-pro-esp32/p1-dongle-pro-esp32.bin",
-          "offset": 0
-        }
-      ]
-    },
-    {
-      "chipFamily": "ESP8266",
-      "parts": [
-        {
-          "path": "waterlezer-esp8266/waterlezer-esp8266.bin",
           "offset": 0
         }
       ]

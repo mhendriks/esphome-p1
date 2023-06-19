@@ -1,9 +1,0 @@
-{
-  "chipFamily": "ESP8266",
-  "parts": [
-    {
-      "path": "p1-dongle-esp8266/p1-dongle-esp8266.bin",
-      "offset": 0
-    }
-  ]
-}
