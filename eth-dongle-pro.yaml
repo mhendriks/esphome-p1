@@ -19,7 +19,8 @@ esp32:
   board: esp32-c3-devkitm-1
 
 external_components:
-  - source: my_components
+  - source: github://mhendriks/esphome-p1@main
+#  - source: my_components
     components: [ ethernet ]
       
 ethernet:
