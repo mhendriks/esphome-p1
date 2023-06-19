@@ -1,5 +1,5 @@
 substitutions:
-  device_name: p1-dongle-pro
+  device_name: p1-dongle-pro-smr2
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
   prj_version: "2023.3.1"
