@@ -1,0 +1,16 @@
+{
+  "name": " : P1 Dongle Pro",
+  "version": "latest",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+    	    {
+			  "path": "p1-dongle-pro-esp32/p1-dongle-pro-esp32.bin",
+			  "offset": 0
+			}
+      ]
+    }
+  ]
+}
