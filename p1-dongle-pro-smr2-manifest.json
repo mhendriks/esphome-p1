@@ -1,0 +1,16 @@
+{
+  "name": " : P1 Dongle Pro smr 2.2",
+  "version": "latest",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+    	    {
+			  "path": "p1-dongle-pro-smr2-esp32/p1-dongle-pro-smr2-esp32.bin",
+			  "offset": 0
+			}
+      ]
+    }
+  ]
+}
