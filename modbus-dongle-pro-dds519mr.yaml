@@ -1,0 +1,151 @@
+substitutions:
+  device_name: modbus-dongle-pro
+  device_description: "Modbus Dongle connecting RTU Modbus to your network"
+  friendly_name: Modbus Dongle Pro
+  prj_version: "v23.09.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  name_add_mac_suffix: false
+  project: 
+    name: "smartstuff.modbus"
+    version: ${prj_version}
+  platformio_options:
+    upload_speed: 1500000
+    
+esp32:
+  board: esp32-c3-devkitm-1
+    
+status_led:
+  pin:
+    number: 7
+    inverted: true
+
+api:
+  services:
+    - service: p1_dongle_reboot
+      then:
+        - button.press:
+            id: reboot
+ota:
+
+wifi:
+  power_save_mode: none
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${device_name}
+    ap_timeout: 15s
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/modbus-dongle-pro.yaml@main
+  
+captive_portal:
+
+web_server:
+  
+# Enable logging
+logger:
+  level: Debug
+
+button:  
+  - platform: restart
+    name: "_Restart device"
+    id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+
+uart:
+  id: mod_bus
+  tx_pin: 0
+  rx_pin: 10
+  baud_rate: 9600
+  parity: even
+  stop_bits: 1
+
+modbus:
+  flow_control_pin: 1
+  id: modbus1
+  send_wait_time: 200ms
+
+modbus_controller:
+  - id: modbus_c
+    ## the Modbus device addr
+    address: 42
+    modbus_id: modbus1
+    setup_priority: -10 
+    update_interval: 10s
+    command_throttle: 200ms
+         
+sensor:    
+  - platform: uptime
+    name: "Uptime"
+  - platform: wifi_signal
+    name: "Wi-Fi Signal"
+    update_interval: 60s
+  - platform: modbus_controller
+    modbus_controller_id: modbus_c
+    id: array_rated_voltage
+    name: "array_rated_voltage"
+    address: 0x0000
+    unit_of_measurement: "V"
+    register_type: read
+    value_type: FP32
+    accuracy_decimals: 1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_c
+    id: array_rated_current
+    name: "array_rated_current"
+    address: 0x0008
+    unit_of_measurement: "A"
+    register_type: read
+    value_type: FP32
+    accuracy_decimals: 1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_c
+    id: array_freq
+    name: "array_freq"
+    address: 0x0036
+    unit_of_measurement: "Hz"
+    register_type: read
+    value_type: FP32
+    accuracy_decimals: 1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_c
+    id: array_rated_pwr
+    name: "array_rated_pwr"
+    address: 0x0012
+    unit_of_measurement: "W"
+    register_type: read
+    value_type: FP32
+    accuracy_decimals: 1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_c
+    id: array_pwr_fac
+    name: "array_pwr_fac"
+    address: 0x002A
+    unit_of_measurement: ""
+    register_type: read
+    value_type: FP32
+    accuracy_decimals: 1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_c
+    id: array_tot_act_pwr
+    name: "array_tot_act_pwr"
+    address: 0x0100
+    unit_of_measurement: "kWh"
+    register_type: read
+    value_type: FP32
+    accuracy_decimals: 1    
+      
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Wi-Fi SSID"
+    bssid:
+      name: "Wi-Fi BSSID"
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
