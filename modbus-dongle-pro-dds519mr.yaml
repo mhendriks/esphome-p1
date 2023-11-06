@@ -38,7 +38,7 @@ wifi:
     ap_timeout: 15s
 
 dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/modbus-dongle-pro.yaml@main
+  package_import_url: github://mhendriks/esphome-p1/modbus-dongle-pro-dds519mr.yaml@main
   
 captive_portal:
 
