@@ -60,6 +60,8 @@ uart:
   baud_rate: 115200
   
 dsmr:
+  water_mbus_id: 2
+
 
 button:  
   - platform: restart
@@ -164,6 +166,9 @@ sensor:
       accuracy_decimals: 0
       filters:
         - multiply: 1000
+    water_delivered:
+      name: Water delivered
+      state_class: total_increasing
     gas_delivered:
       name: "Gas Consumed"
       state_class: total_increasing
