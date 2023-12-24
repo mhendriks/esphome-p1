@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
-  prj_version: "v23.02.1"
+  prj_version: "v23.12.1"
 
 esphome:
   name: ${device_name}
@@ -16,15 +16,19 @@ esphome:
     
 esp32:
   board: esp32-c3-devkitm-1
-#   framework:
-#     type: arduino
-#     version: 2.0.6
-#     platform_version: 4.4.0
-    
+
+improv_serial:
+  next_url: http://{{ip_address}}
+
+#BLE DOESN'T WORK
+# esp32_improv:
+#   authorizer: none
+  
 status_led:
   pin:
     number: 7
     inverted: true
+    id: led
 
 api:
   services:
