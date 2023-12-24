@@ -2,7 +2,7 @@ substitutions:
   device_name: modbus-dongle-pro
   device_description: "Modbus Dongle connecting RTU Modbus to your network"
   friendly_name: Modbus Dongle Pro
-  prj_version: "v23.09.1"
+  prj_version: "v23.12.1"
 
 esphome:
   name: ${device_name}
@@ -36,6 +36,9 @@ wifi:
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
+
+improv_serial:
+  next_url: http://{{ip_address}}
 
 dashboard_import:
   package_import_url: github://mhendriks/esphome-p1/modbus-dongle-pro-dds519mr.yaml@main
