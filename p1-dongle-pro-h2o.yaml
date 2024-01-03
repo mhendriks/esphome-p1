@@ -30,10 +30,16 @@ api:
       variables:
         set_value: int
       then:
-        - pulse_meter.set_total_pulses:
-            id: h2o_pulse
+        - globals.set:
+            id: totalWaterUsage
             value: !lambda 'return set_value;'
-          
+
+globals:
+  - id: totalWaterUsage
+    type: int
+    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'  
+
 ota:
 captive_portal:
 web_server:
@@ -87,7 +93,7 @@ switch:
           red:   0%
           green: 0%
           blue: 100%
-          brightness: 30%
+          brightness: 40%
           transition_length: 50ms
     on_turn_off:
       - light.turn_off: 
@@ -151,13 +157,24 @@ sensor:
     internal_filter_mode: EDGE
     icon: mdi:flash-outline
     accuracy_decimals: 0
-    total:
-      name: "Water Total"
-      id: h2o_total
-      state_class: total_increasing
-      icon: mdi:water
-      unit_of_measurement: L
-      accuracy_decimals: 0
+    # total:
+    #   name: "Water Total"
+    #   id: h2o_total
+    #   state_class: total_increasing
+    #   icon: mdi:water
+    #   unit_of_measurement: L
+    #   accuracy_decimals: 0
+  - platform: template
+    name: "Watermeter total"
+    state_class: "total_increasing"
+    device_class: "water"
+    icon: mdi:water
+    update_interval: 1s
+    unit_of_measurement: L
+    accuracy_decimals: 0
+    lambda: |- 
+        if (id(h2o_pulse).state > 0) id(totalWaterUsage) += 1;
+        return id(totalWaterUsage);
 
   - platform: dsmr
 #    energy_delivered_lux:
