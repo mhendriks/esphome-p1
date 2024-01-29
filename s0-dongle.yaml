@@ -30,8 +30,8 @@ ota:
 wifi:
 #  ssid: !secret wifi_ssid
 #  password: !secret wifi_password
-
   # Enable fallback hotspot (captive portal) in case wifi connection fails
+#   reboot_timeout: 0s
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
@@ -46,11 +46,12 @@ web_server:
   
 # Enable logging
 logger:
-  level: DEBUG
+  level: INFO
   esp8266_store_log_strings_in_flash: False
 
 api:
 #via Home Assistant Ontwikkelhulpmiddelen > services zoeken op esphome.watermeter_set_water_reading en via deze methode de juiste beginstand invoeren
+#   reboot_timeout: 0s
   services:
     - service: s0_reset_total_energy
       then:
