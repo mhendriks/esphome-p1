@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-p1-h2o
   device_description: "Ultra dongle with P1 and water sensor"
   friendly_name: Ultra P1 H2O
-  prj_version: "2024.1.1"
+  prj_version: "2024.2.1"
 
 esphome:
   name: ${device_name}
@@ -76,7 +76,9 @@ dsmr:
  id: dsmr_instance
  receive_timeout: 200ms
  max_telegram_length: 1700
- request_pin: 17
+ request_pin: 
+    number: 17
+    inverted: true
    
 light:
   - platform: status_led
