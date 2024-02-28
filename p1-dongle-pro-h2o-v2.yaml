@@ -28,11 +28,11 @@ api:
             id: reboot                        
     - service: set_water_total
       variables:
-        set_value: int
+        new_total: int
       then:
-        - globals.set:
-            id: totalWaterUsage
-            value: !lambda 'return set_value;'
+        - pulse_meter.set_total_pulses:
+            id: h2o_pulse
+            value: !lambda 'return new_total;'            
 
 globals:
   - id: totalWaterUsage
@@ -54,7 +54,7 @@ dashboard_import:
   
 # Enable logging
 logger:
-  level: ERROR
+  level: DEBUG
 
 dsmr:
 uart:
@@ -106,24 +106,12 @@ sensor:
     internal_filter_mode: EDGE
     icon: mdi:flash-outline
     accuracy_decimals: 0
-    # total:
-    #   name: "Water Total"
-    #   id: h2o_total
-    #   state_class: total_increasing
-    #   icon: mdi:water
-    #   unit_of_measurement: L
-    #   accuracy_decimals: 0
-  - platform: template
-    name: "Watermeter total"
-    state_class: "total_increasing"
-    device_class: "water"
-    icon: mdi:water
-    update_interval: 1s
-    unit_of_measurement: L
-    accuracy_decimals: 0
-    lambda: |- 
-        if (id(h2o_pulse).state > 0) id(totalWaterUsage) += 1;
-        return id(totalWaterUsage);
+    total:
+      name: "Water Total"
+      state_class: total_increasing
+      icon: mdi:water
+      unit_of_measurement: L
+      accuracy_decimals: 0
 
   - platform: dsmr
 #    energy_delivered_lux:
