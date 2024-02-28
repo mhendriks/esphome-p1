@@ -54,7 +54,7 @@ dashboard_import:
   
 # Enable logging
 logger:
-  level: DEBUG
+  level: ERROR
 
 dsmr:
 uart:
