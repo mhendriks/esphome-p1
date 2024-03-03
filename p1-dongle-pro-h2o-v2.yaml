@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro-h2o
   device_description: "P1 Dongle Pro + H2O v2"
   friendly_name: P1 Dongle Pro H2O
-  prj_version: "2024.02.01"
+  prj_version: "2024.02.02"
 
 esphome:
   name: ${device_name}
@@ -32,13 +32,7 @@ api:
       then:
         - pulse_meter.set_total_pulses:
             id: h2o_pulse
-            value: !lambda 'return new_total;'            
-
-globals:
-  - id: totalWaterUsage
-    type: int
-    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
-    initial_value: '0'  
+            value: !lambda 'return new_total;'              
 
 ota:
 captive_portal:
@@ -107,8 +101,9 @@ sensor:
     icon: mdi:flash-outline
     accuracy_decimals: 0
     total:
-      name: "Water Total"
+      name: "Watermeter total"
       state_class: total_increasing
+      device_class: "water"
       icon: mdi:water
       unit_of_measurement: L
       accuracy_decimals: 0
