@@ -2,7 +2,7 @@ substitutions:
   device_name: eth-dongle-pro
   device_description: "P1 Dongle Pro with ethernet access"
   friendly_name: ETH Dongle Pro
-  prj_version: "2023.11.1"
+  prj_version: "2024.03.1"
 
 esphome:
   name: ${device_name}
@@ -18,10 +18,10 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
 
-external_components:
-  - source: github://mhendriks/esphome-p1@main
+# external_components:
+# #   - source: github://mhendriks/esphome-p1@main
 #   - source: my_components
-    components: [ ethernet ]
+#     components: [ ethernet ]
 
           
 ethernet:
@@ -31,7 +31,7 @@ ethernet:
   mosi_pin: 6
   miso_pin: 5
   interrupt_pin: 1
-  clock_speed: 25
+#   clock_speed: 25
 #   manual_ip:
 #     static_ip: 192.168.2.123
 #     gateway: 192.168.2.1
