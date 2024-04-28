@@ -1,12 +1,13 @@
 substitutions:
   device_name: s0-dongle
   device_description: "S0 module to read S0 interfaces (pulse counters)"
-  friendly_name: S0-Dongle
+  friendly_name: S0 Dongle
   p_version: "v22.12.1"
 
 esphome:
   name: ${device_name}
-  comment: "${device_description}" 
+  friendly_name: ${friendly_name}
+  comment: ${device_description}
   name_add_mac_suffix: false
   project:
     name: smartstuff.s0-dongle
@@ -50,6 +51,8 @@ logger:
   esp8266_store_log_strings_in_flash: False
 
 api:
+#  encryption:
+#    key: 
 #via Home Assistant Ontwikkelhulpmiddelen > services zoeken op esphome.watermeter_set_water_reading en via deze methode de juiste beginstand invoeren
 #   reboot_timeout: 0s
   services:
@@ -79,10 +82,12 @@ globals:
 button:  
   - platform: restart
     name: "_Restart device"
+    id: button_restart_device
   - platform: factory_reset
-    name: "_Restart with Factory Default Settings"  
+    name: "_Restart with Factory Default Settings"
+    id: button_factory_reset
   - platform: template
-    name: "_Reset - Total Energy Counter"
+    name: "_Reset - Total Energy"
     id: button_reset_total
     on_press:
       - pulse_meter.set_total_pulses:
@@ -91,12 +96,13 @@ button:
             
 sensor:
   - platform: pulse_meter
+    id: pulse
+    name: Current Power
     pin: 
       number: 5
       mode:
         input: true
         pullup: true #v3.5 aanzetten
-    id: pulse
     state_class: measurement
     unit_of_measurement: 'W'
     device_class: power
@@ -118,7 +124,8 @@ sensor:
         - lambda: return x * (1.0 / id(pulse_rate));
 
   - platform: uptime
-    name: "Uptime"
+    id: device_uptime
+    name: Device Uptime
 
   - platform: total_daily_energy
     name: 'S0 Daily Energy'
@@ -138,26 +145,42 @@ sensor:
 time:
   - platform: homeassistant
     id: homeassistant_time
+    timezone: "Europe/Amsterdam"    
 
 text_sensor:
+  - platform: template
+    id: device_time
+    name: Device Time
+    lambda: |-
+      char str[17];
+      time_t currTime = id(homeassistant_time).now().timestamp;
+      strftime(str, sizeof(str), "%Y-%m-%d %H:%M", localtime(&currTime));
+      return  { str };
+    update_interval: 60s
+    
   - platform: wifi_info
     ip_address:
-      name: IP-adres
+      id: ip_address
+      name: IP address
       icon: mdi:ip-network
     ssid:
-      name: Netwerk
+      id: network_name
+      name: Network Name
       icon: mdi:access-point-network
     mac_address:
-      name: Mac-adres
+      id: mac_address
+      name: Mac address
       icon: mdi:folder-key-network-outline
       
   - platform: template
     name: "Config Version"
+    id: config_version
     icon: "mdi:label-outline"
     update_interval: 6h
     lambda: return {"$p_version"};
       
   - platform: version
     name: "ESPHome Version"
+    id: esp_home_version
     hide_timestamp: true
 
