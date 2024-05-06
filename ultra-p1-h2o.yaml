@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-p1-h2o
   device_description: "Ultra dongle with P1 and water sensor"
   friendly_name: Ultra P1 H2O
-  prj_version: "2024.2.1"
+  prj_version: "2024.3.1"
 
 esphome:
   name: ${device_name}
@@ -18,10 +18,6 @@ esp32:
   variant: esp32s3
   board: esp32-s3-devkitc-1
 
-external_components:
-  - source: github://mhendriks/esphome-p1@main
-    components: [ ethernet ]
-
 ethernet:
   type: W5500
   cs_pin: 10
@@ -29,7 +25,6 @@ ethernet:
   mosi_pin: 11
   miso_pin: 13
   interrupt_pin: 14
-  clock_speed: 25
   
 ota:
 
@@ -46,18 +41,12 @@ api:
             id: reboot                        
     - service: set_water_total
       variables:
-        set_value: int
+        new_total: int
       then:
-        - globals.set:
-            id: totalWaterUsage
-            value: !lambda 'return set_value;'
-
-globals:
-  - id: totalWaterUsage
-    type: int
-    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
-    initial_value: '0'  
-
+        - pulse_meter.set_total_pulses:
+            id: watermeter_pulse
+            value: !lambda 'return new_total;'                
+ 
 dashboard_import:
   package_import_url: github://mhendriks/esphome-p1/ultra-p1-h2o.yaml@main
   
@@ -154,36 +143,30 @@ binary_sensor:
       then:
         - switch.toggle: status_led_switch      
      
-sensor:
-  - platform: pulse_counter
+sensor: 
+  - platform: pulse_meter
+    name: "Watermeter pulse"
     pin: 
       number: 46
       mode:
         input: true
-        pullup: true
+        pullup: true 
     id: watermeter_pulse
-    name: "Watermeter pulse"
-    count_mode:
-      rising_edge: DISABLE
-      falling_edge: INCREMENT
     state_class: measurement
-    update_interval: 1s
+    unit_of_measurement: 'L'
+    device_class: water
+    internal_filter: 13us
+    internal_filter_mode: EDGE
+    icon: mdi:flash-outline
     accuracy_decimals: 0
-    unit_of_measurement: 'L/min'
-  
-  - platform: template
-    name: "Watermeter total"
-    state_class: "total_increasing"
-    device_class: "water"
-    icon: mdi:water
-    update_interval: 1s
-    unit_of_measurement: L
-    accuracy_decimals: 0
-    lambda: |-
-      if (id(watermeter_pulse).state > 0) id(totalWaterUsage) += 1;
-      return id(totalWaterUsage);
-
-
+    total:
+      name: "Water Total"
+      device_class: water
+      state_class: total_increasing
+      icon: mdi:water
+      unit_of_measurement: L
+      accuracy_decimals: 0    
+    
   - platform: dsmr
 #    energy_delivered_lux:
 #      name: "Energy Consumed Luxembourg"
