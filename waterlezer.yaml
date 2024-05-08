@@ -8,7 +8,7 @@ esphome:
   comment: "${device_description}" 
   name_add_mac_suffix: false
   platformio_options:
-    upload_speed: 921600
+    upload_speed: 1500000 #921600 
   
   project:
     name: smartstuff.waterlezer
@@ -66,6 +66,13 @@ button:
     name: "_Restart device"
   - platform: factory_reset
     name: "_Restart with Factory Default Settings"
+  - platform: template
+    name: "_Reset - Total Water Counter"
+    id: button_reset_total
+    on_press:
+      - globals.set:
+          id: totalWaterUsage
+          value: "0"  
     
 sensor:
   - platform: pulse_counter
