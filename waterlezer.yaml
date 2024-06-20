@@ -1,7 +1,7 @@
 substitutions:
   device_name: waterlezer
   device_description: Water meter sensor 
-  version: "v22.12.2"
+  version: "v24.06.01"
 
 esphome:
   name: ${device_name}
