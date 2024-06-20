@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-p1-h2o
   device_description: "Ultra dongle with P1 and water sensor"
   friendly_name: Ultra P1 H2O
-  prj_version: "2024.3.1"
+  prj_version: "2024.6.1"
 
 esphome:
   name: ${device_name}
@@ -27,7 +27,8 @@ ethernet:
   interrupt_pin: 14
   
 ota:
-
+  platform: esphome
+  
 web_server:
   
 # improv_serial:

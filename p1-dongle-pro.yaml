@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
-  prj_version: "v23.12.1"
+  prj_version: "v24.06.01"
 
 esphome:
   name: ${device_name}
@@ -37,7 +37,8 @@ api:
         - button.press:
             id: reboot
 ota:
-
+  platform: esphome
+  
 wifi:
   power_save_mode: none
 # Enable fallback hotspot (captive portal) in case wifi connection fails

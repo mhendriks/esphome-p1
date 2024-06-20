@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro-h2o
   device_description: "P1 Dongle Pro + H2O v2"
   friendly_name: P1 Dongle Pro H2O
-  prj_version: "2024.03.01"
+  prj_version: "2024.6.1"
 
 esphome:
   name: ${device_name}
@@ -41,6 +41,8 @@ globals:
     initial_value: '0'       # beginstand van je watermeter -> aanpassen via Home Assistant services
 
 ota:
+  platform: esphome
+  
 captive_portal:
 web_server:
 wifi:
