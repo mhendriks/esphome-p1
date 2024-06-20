@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-p1-h2o
   device_description: "Ultra dongle with P1 and water sensor"
   friendly_name: Ultra P1 H2O
-  prj_version: "2024.6.1"
+  prj_version: "2024.6.2"
 
 esphome:
   name: ${device_name}
@@ -69,6 +69,7 @@ dsmr:
  request_pin: 
     number: 17
     inverted: true
+ water_mbus_id: 2
    
 light:
   - platform: status_led
@@ -267,6 +268,16 @@ sensor:
     gas_delivered_be:
       name: "Gas Consumed Belgium"
       state_class: total_increasing
+    water_delivered:
+      name: Water delivered
+      state_class: total_increasing      
+    active_energy_import_current_average_demand:
+      name: "Current Average Demand"
+    active_energy_import_maximum_demand_running_month:
+      name: "Maximum Month Demand"
+    active_energy_import_maximum_demand_last_13_months:
+      name: "13 Month Maximum Quarterly Demand"      
+  
   - platform: uptime
     name: "_Uptime"
   
