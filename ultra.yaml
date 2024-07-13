@@ -1,0 +1,377 @@
+substitutions:
+  device_name: ultra
+  device_description: "Ultra dongle with all in one"
+  friendly_name: Ultra All1One 
+  prj_version: "2024.7.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  name_add_mac_suffix: false
+  project: 
+    name: "Smartstuff.Ultra"
+    version: ${prj_version}
+  platformio_options:
+    upload_speed: 1500000
+    
+esp32:
+  variant: esp32s3
+  board: esp32-s3-devkitc-1
+
+external_components:
+#   - source: my_components
+#     components: [ dsmr ]
+  - source: github://mhendriks/esphome-p1@main
+    components: [dsmr]
+
+ethernet:
+  type: W5500
+  cs_pin: 10
+  clk_pin: 12
+  mosi_pin: 11
+  miso_pin: 13
+  interrupt_pin: 14
+  
+ota:
+  platform: esphome
+  
+web_server:
+  
+# improv_serial:
+#   next_url: http://{{ip_address}}
+
+api:
+  services:
+    - service: p1_dongle_reboot
+      then:
+        - button.press:
+            id: reboot                        
+    - service: set_water_total
+      variables:
+        new_total: int
+      then:
+        - pulse_meter.set_total_pulses:
+            id: watermeter_pulse
+            value: !lambda 'return new_total;'                
+ 
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/ultra.yaml@main
+  
+# Enable logging
+logger:
+  level: error
+
+uart:
+  - id: p1_uart
+    rx_pin:
+      number: 18
+      inverted: true
+    baud_rate: 115200
+    rx_buffer_size: 1700
+  - id: p1_bridge_uart
+    tx_pin:
+      number: 21
+    baud_rate: 115200
+
+dsmr:
+ uart_id: p1_uart
+ id: dsmr_instance
+ receive_timeout: 200ms
+ max_telegram_length: 1700
+ request_pin: 
+    number: 17
+    inverted: true
+ water_mbus_id: 2
+  
+globals:
+  - id: tot_count
+    type: float
+    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'   # beginstand  -> aanpassen via Home Assistant services
+  - id: pulse_rate
+    type: int
+    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '1000'   # pulse rate van de kWh meter -> xxx pulses / kWh
+
+   
+light:
+  - platform: status_led
+    name: "status led"
+    output: status_output
+    internal: true
+  - platform: neopixelbus
+    variant: WS2812
+    pin: 42
+    num_leds: 1
+    name: "_Status LED"
+    id: esp32c3_rgb_led
+    entity_category: config
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+switch:
+  - platform: template
+    id: status_led_switch
+    # name: "Status LED Switch"
+    optimistic: true
+    on_turn_on:
+      - light.turn_on: 
+          id: esp32c3_rgb_led
+          red:   0%
+          green: 0%
+          blue: 100%
+          brightness: 40%
+          transition_length: 50ms
+    on_turn_off:
+      - light.turn_off: 
+          id: esp32c3_rgb_led
+          transition_length: 50ms
+
+output:
+  - platform: template
+    id: status_output
+    type: binary
+    write_action:
+      - if:
+          condition:
+             lambda: return state > 0;
+          then:
+            - if:
+                condition:
+                  switch.is_off: status_led_switch
+                then:
+                  switch.turn_on: status_led_switch
+          else:
+            - if:
+                condition:
+                  switch.is_on: status_led_switch
+                then:
+                  switch.turn_off: status_led_switch
+
+button:  
+  - platform: restart
+    name: "_Restart device"
+    id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+  - platform: template
+    name: "_Reset - Total Energy"
+    id: button_reset_total
+    on_press:
+      - pulse_meter.set_total_pulses:
+          id: pulse
+          value: 0  
+                
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 0
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: _PushButton
+    on_press:
+      then:
+        - switch.toggle: status_led_switch      
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: "Europe/Amsterdam"  
+         
+sensor: 
+  - platform: pulse_meter
+    name: "Watermeter pulse"
+    pin: 
+      number: 46
+      mode:
+        input: true
+        pullup: true 
+    id: watermeter_pulse
+    state_class: measurement
+    unit_of_measurement: 'L'
+    device_class: water
+    internal_filter: 13us
+    internal_filter_mode: EDGE
+    icon: mdi:flash-outline
+    accuracy_decimals: 0
+    total:
+      name: "Water Total"
+      device_class: water
+      state_class: total_increasing
+      icon: mdi:water
+      unit_of_measurement: L
+      accuracy_decimals: 0    
+      
+  - platform: pulse_meter
+    id: pulse
+    name: Current Power
+    pin: 
+      number: 45
+      mode:
+        input: true
+        pullup: true #v3.5 aanzetten
+    state_class: measurement
+    unit_of_measurement: 'W'
+    device_class: power
+    internal_filter: 100ms
+    internal_filter_mode: EDGE    
+    icon: mdi:flash-outline
+    filters:
+      #- multiply: 0.06 # (60s/1000 pulses per kWh)
+      - lambda: return x * ((60.0 / id(pulse_rate)) * 1000.0);
+    total:
+      name: "S0 Total Energy"
+      id: pulse_tot
+      unit_of_measurement: "kWh"
+      icon: mdi:circle-slice-3
+      state_class: total_increasing
+      device_class: energy
+      accuracy_decimals: 3
+      filters:
+        - lambda: return x * (1.0 / id(pulse_rate));
+        
+  - platform: total_daily_energy
+    name: 'S0 Daily Energy'
+    id:   s0_daily
+    power_id: pulse
+    unit_of_measurement: 'kWh'
+    icon: mdi:circle-slice-3
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001             
+    
+  - platform: dsmr
+#    energy_delivered_lux:
+#      name: "Energy Consumed Luxembourg"
+#      state_class: total_increasing
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+#    energy_returned_lux:
+#      name: "Energy Produced Luxembourg"
+#      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned:
+      name: "Power Produced"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    electricity_failures:
+      name: "Electricity Failures"
+      icon: mdi:alert
+    electricity_long_failures:
+      name: "Long Electricity Failures"
+      icon: mdi:alert
+    voltage_l1:
+      name: "Voltage Phase 1"
+    voltage_l2:
+      name: "Voltage Phase 2"
+    voltage_l3:
+      name: "Voltage Phase 3"
+    current_l1:
+      name: "Current Phase 1"
+    current_l2:
+      name: "Current Phase 2"
+    current_l3:
+      name: "Current Phase 3"
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l1:
+      name: "Power Produced Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l2:
+      name: "Power Produced Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l3:
+      name: "Power Produced Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    gas_delivered:
+      name: "Gas Consumed"
+      state_class: total_increasing
+    water_delivered:
+      name: Water delivered
+      state_class: total_increasing
+    gas_delivered_be:
+      name: "Gas Consumed Belgium"
+      state_class: total_increasing
+    active_energy_import_current_average_demand:
+      name: "Current Average Demand"
+    active_energy_import_maximum_demand_running_month:
+      name: "Maximum Month Demand"
+    active_energy_import_maximum_demand_last_13_months:
+      name: "13 Month Maximum Quarterly Demand"    
+  - platform: uptime
+    name: "_Uptime"
+  
+text_sensor:
+  - platform: dsmr
+    telegram:
+      name: "telegram"
+      disabled_by_default: true
+      on_value:
+        then:
+          - lambda: |-
+              p1_bridge_uart->write_str(x.c_str());
+  - platform: dsmr
+    identification:
+      name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    p1_version_be:
+      name: "DSMR Version Belgium"
+  - platform: version
+    name: "_ESPHome Version"
+    hide_timestamp: true
