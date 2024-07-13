@@ -21,8 +21,10 @@ esp32:
 external_components:
 #   - source: my_components
 #     components: [ dsmr ]
-  - source: github://mhendriks/esphome-p1@main
-    components: [dsmr]
+#   - source: github://mhendriks/esphome-p1@main
+#     components: [dsmr]
+  - source: github://pr#6841
+    components: [dsmr]    
 
 ethernet:
   type: W5500
