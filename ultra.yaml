@@ -1,5 +1,5 @@
 substitutions:
-  device_name: ultra
+  device_name: ultra-dongle
   device_description: "Ultra dongle with all in one"
   friendly_name: Ultra All in One 
   prj_version: "2024.7.1"
