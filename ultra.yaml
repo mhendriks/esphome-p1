@@ -1,7 +1,7 @@
 substitutions:
   device_name: ultra
   device_description: "Ultra dongle with all in one"
-  friendly_name: Ultra All1One 
+  friendly_name: Ultra All in One 
   prj_version: "2024.7.1"
 
 esphome:
