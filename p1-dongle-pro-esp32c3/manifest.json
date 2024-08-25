@@ -1,0 +1,13 @@
+{
+  "chipFamily": "ESP32-C3",
+  "ota": {
+    "path": "p1-dongle-pro-esp32c3/p1-dongle-pro-esp32c3.ota.bin",
+    "md5": "929e427918784a571c146458d7ce61e4"
+  },
+  "parts": [
+    {
+      "path": "p1-dongle-pro-esp32c3/p1-dongle-pro-esp32c3.factory.bin",
+      "offset": 0
+    }
+  ]
+}

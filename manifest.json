@@ -6,27 +6,39 @@
   "builds": [
     {
       "chipFamily": "ESP32-C3",
+      "ota": {
+        "path": "eth-dongle-pro-esp32c3/eth-dongle-pro-esp32c3.ota.bin",
+        "md5": "76afac77bcf0bc8ed2d5a854ff52509e"
+      },
       "parts": [
         {
-          "path": "eth-dongle-pro-esp32/eth-dongle-pro-esp32.bin",
+          "path": "eth-dongle-pro-esp32c3/eth-dongle-pro-esp32c3.factory.bin",
           "offset": 0
         }
       ]
     },
     {
       "chipFamily": "ESP32-C3",
+      "ota": {
+        "path": "p1-dongle-pro-esp32c3/p1-dongle-pro-esp32c3.ota.bin",
+        "md5": "929e427918784a571c146458d7ce61e4"
+      },
       "parts": [
         {
-          "path": "p1-dongle-pro-esp32/p1-dongle-pro-esp32.bin",
+          "path": "p1-dongle-pro-esp32c3/p1-dongle-pro-esp32c3.factory.bin",
           "offset": 0
         }
       ]
     },
     {
       "chipFamily": "ESP32-C3",
+      "ota": {
+        "path": "p1-dongle-pro-smr2-esp32c3/p1-dongle-pro-smr2-esp32c3.ota.bin",
+        "md5": "f29c76d085ed25a09fc9454d294f3dd3"
+      },
       "parts": [
         {
-          "path": "p1-dongle-pro-smr2-esp32/p1-dongle-pro-smr2-esp32.bin",
+          "path": "p1-dongle-pro-smr2-esp32c3/p1-dongle-pro-smr2-esp32c3.factory.bin",
           "offset": 0
         }
       ]
