@@ -1,5 +1,5 @@
 substitutions:
-  device_name: p1-dongle-pro-smr2
+  device_name: p1-dongle-pro
   device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
   friendly_name: P1 Dongle Pro
   prj_version: "2024.08.01"
@@ -12,10 +12,15 @@ esphome:
     name: "smartstuff.p1_dongle_pro"
     version: ${prj_version}
   platformio_options:
-    upload_speed: 1500000
+    upload_speed: 921600
+    platform: espressif32@4.3.0
+    board_build.flash_mode: dio
     
 esp32:
   board: esp32-c3-devkitm-1
+  framework: 
+    type: arduino
+    version: 2.0.3
     
 status_led:
   pin:
@@ -39,7 +44,7 @@ wifi:
     ap_timeout: 15s
 
 dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro-smr2_2.yaml@main
+  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro.yaml@main
   
 captive_portal:
 
@@ -51,23 +56,23 @@ logger:
   level: INFO
 
 uart:
-  baud_rate: 9600
-  data_bits: 7
-  parity: EVEN
-  stop_bits: 1
   rx_pin:
     number: 10
     inverted: true
+  baud_rate: 115200
+  rx_buffer_size: 1700
   
 dsmr:
-  crc_check: false
+ id: dsmr_instance
+ receive_timeout: 200ms
+ max_telegram_length: 1700
+ gas_mbus_id: 2
+
 
 button:  
   - platform: restart
-    name: "_Restart device"
+    name: "Reboot device" 
     id: reboot
-  - platform: factory_reset
-    name: "_Restart with Factory Default Settings"
       
 sensor:
   - platform: dsmr

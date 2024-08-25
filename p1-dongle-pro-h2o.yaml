@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro-h2o
   device_description: "P1 Dongle Pro + H2O counter"
   friendly_name: P1 Dongle Pro H2O
-  prj_version: "2023.12.1"
+  prj_version: "2024.08.01"
 
 esphome:
   name: ${device_name}
@@ -41,6 +41,8 @@ globals:
     initial_value: '0'  
 
 ota:
+  platform: esphome
+
 captive_portal:
 web_server:
 wifi:

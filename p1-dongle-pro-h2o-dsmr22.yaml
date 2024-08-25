@@ -1,7 +1,7 @@
 substitutions:
-  device_name: p1-dongle-pro-smr2
-  device_description: "P1 Dongle Pro (ESP32) module to read your smart meter"
-  friendly_name: P1 Dongle Pro
+  device_name: p1-dongle-pro-h2o
+  device_description: "P1 Dongle Pro + H2O counter"
+  friendly_name: P1 Dongle Pro H2O
   prj_version: "2024.08.01"
 
 esphome:
@@ -9,58 +9,124 @@ esphome:
   comment: "${device_description}" 
   name_add_mac_suffix: false
   project: 
-    name: "smartstuff.p1_dongle_pro"
+    name: "smartstuff.p1_dongle_pro_h2o"
     version: ${prj_version}
   platformio_options:
     upload_speed: 1500000
     
 esp32:
   board: esp32-c3-devkitm-1
-    
-status_led:
-  pin:
-    number: 7
-    inverted: true
+  
+improv_serial:
+  next_url: http://{{ip_address}}
 
 api:
   services:
     - service: p1_dongle_reboot
       then:
         - button.press:
-            id: reboot
+            id: reboot                        
+    - service: set_water_total
+      variables:
+        set_value: int
+      then:
+        - globals.set:
+            id: totalWaterUsage
+            value: !lambda 'return set_value;'
+
+globals:
+  - id: totalWaterUsage
+    type: int
+    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'  
+
 ota:
   platform: esphome
 
+captive_portal:
+web_server:
 wifi:
-  power_save_mode: none
 # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
 
 dashboard_import:
-  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro-smr2_2.yaml@main
-  
-captive_portal:
-
-web_server:
-  port: 80
+  package_import_url: github://mhendriks/esphome-p1/p1-dongle-pro-h2o-dsmr22.yaml@main
   
 # Enable logging
 logger:
-  level: INFO
+  level: ERROR
+ 
+dsmr:
+  crc_check: false
 
 uart:
-  baud_rate: 9600
-  data_bits: 7
-  parity: EVEN
-  stop_bits: 1
   rx_pin:
     number: 10
     inverted: true
+  rx_buffer_size: 1700
+  baud_rate: 9600
+  data_bits: 7
+  parity: EVEN
+  stop_bits: 1  
   
-dsmr:
-  crc_check: false
+light:
+  - platform: status_led
+    name: "status led"
+    output: status_output
+    internal: true
+  - platform: neopixelbus
+    variant: WS2812
+    pin: 8
+    num_leds: 1
+    name: "_Status LED"
+    id: esp32c3_rgb_led
+    entity_category: config
+    restore_mode: ALWAYS_OFF
+    internal: true
+#     method:
+#       type: esp32_rmt
+#       channel: 0  
+
+switch:
+  - platform: template
+    id: status_led_switch
+    # name: "Status LED Switch"
+    optimistic: true
+    on_turn_on:
+      - light.turn_on: 
+          id: esp32c3_rgb_led
+          red:   0%
+          green: 0%
+          blue: 100%
+          brightness: 40%
+          transition_length: 50ms
+    on_turn_off:
+      - light.turn_off: 
+          id: esp32c3_rgb_led
+          transition_length: 50ms
+
+output:
+  - platform: template
+    id: status_output
+    type: binary
+    write_action:
+      - if:
+          condition:
+             lambda: return state > 0;
+          then:
+            - if:
+                condition:
+                  switch.is_off: status_led_switch
+                then:
+                  switch.turn_on: status_led_switch
+          else:
+            - if:
+                condition:
+                  switch.is_on: status_led_switch
+                then:
+                  switch.turn_off: status_led_switch
 
 button:  
   - platform: restart
@@ -69,7 +135,54 @@ button:
   - platform: factory_reset
     name: "_Restart with Factory Default Settings"
       
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 9
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: _PushButton
+    on_press:
+      then:
+        - switch.toggle: status_led_switch      
+      
 sensor:
+  - platform: pulse_meter
+    name: "Watermeter pulse"
+    pin: 
+      number: 0
+      mode:
+        input: true
+        pullup: true 
+    id: h2o_pulse
+    state_class: measurement
+    unit_of_measurement: 'L'
+    device_class: water
+    internal_filter: 13us
+    internal_filter_mode: EDGE
+    icon: mdi:flash-outline
+    accuracy_decimals: 0
+    # total:
+    #   name: "Water Total"
+    #   id: h2o_total
+    #   state_class: total_increasing
+    #   icon: mdi:water
+    #   unit_of_measurement: L
+    #   accuracy_decimals: 0
+  - platform: template
+    name: "Watermeter total"
+    state_class: "total_increasing"
+    device_class: "water"
+    icon: mdi:water
+    update_interval: 1s
+    unit_of_measurement: L
+    accuracy_decimals: 0
+    lambda: |- 
+        if (id(h2o_pulse).state > 0) id(totalWaterUsage) += 1;
+        return id(totalWaterUsage);
+
   - platform: dsmr
 #    energy_delivered_lux:
 #      name: "Energy Consumed Luxembourg"
@@ -170,9 +283,9 @@ sensor:
       name: "Gas Consumed Belgium"
       state_class: total_increasing
   - platform: uptime
-    name: "Uptime"
+    name: "_Uptime"
   - platform: wifi_signal
-    name: "Wi-Fi Signal"
+    name: "_Wi-Fi Signal"
     update_interval: 60s
       
 text_sensor:
@@ -185,11 +298,11 @@ text_sensor:
       name: "DSMR Version Belgium"
   - platform: wifi_info
     ip_address:
-      name: "IP Address"
+      name: "_IP Address"
     ssid:
-      name: "Wi-Fi SSID"
+      name: "_Wi-Fi SSID"
     bssid:
-      name: "Wi-Fi BSSID"
+      name: "_Wi-Fi BSSID"
   - platform: version
-    name: "ESPHome Version"
+    name: "_ESPHome Version"
     hide_timestamp: true
