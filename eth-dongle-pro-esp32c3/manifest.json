@@ -2,7 +2,7 @@
   "chipFamily": "ESP32-C3",
   "ota": {
     "path": "eth-dongle-pro-esp32c3/eth-dongle-pro-esp32c3.ota.bin",
-    "md5": "76afac77bcf0bc8ed2d5a854ff52509e"
+    "md5": "eeb9df36afa104e3b8ddf8784d325134"
   },
   "parts": [
     {

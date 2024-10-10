@@ -8,7 +8,7 @@
       "chipFamily": "ESP32-C3",
       "ota": {
         "path": "eth-dongle-pro-esp32c3/eth-dongle-pro-esp32c3.ota.bin",
-        "md5": "76afac77bcf0bc8ed2d5a854ff52509e"
+        "md5": "eeb9df36afa104e3b8ddf8784d325134"
       },
       "parts": [
         {
@@ -21,7 +21,7 @@
       "chipFamily": "ESP32-C3",
       "ota": {
         "path": "p1-dongle-pro-esp32c3/p1-dongle-pro-esp32c3.ota.bin",
-        "md5": "929e427918784a571c146458d7ce61e4"
+        "md5": "d719d2720fa6c8d68163f5b9b18111cc"
       },
       "parts": [
         {
@@ -34,7 +34,7 @@
       "chipFamily": "ESP32-C3",
       "ota": {
         "path": "p1-dongle-pro-smr2-esp32c3/p1-dongle-pro-smr2-esp32c3.ota.bin",
-        "md5": "f29c76d085ed25a09fc9454d294f3dd3"
+        "md5": "e8950141a91ae85a9d46e14e4d67e0b8"
       },
       "parts": [
         {
