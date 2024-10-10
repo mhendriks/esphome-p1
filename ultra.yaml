@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-dongle
   device_description: "Ultra dongle with all in one"
   friendly_name: Ultra All in One 
-  prj_version: "2024.7.1"
+  prj_version: "2024.10.1"
 
 esphome:
   name: ${device_name}
@@ -18,13 +18,13 @@ esp32:
   variant: esp32s3
   board: esp32-s3-devkitc-1
 
-external_components:
-#   - source: my_components
-#     components: [ dsmr ]
-#   - source: github://mhendriks/esphome-p1@main
-#     components: [dsmr]
-  - source: github://pr#6841
-    components: [dsmr]    
+# external_components:
+# #   - source: my_components
+# #     components: [ dsmr ]
+# #   - source: github://mhendriks/esphome-p1@main
+# #     components: [dsmr]
+#   - source: github://pr#6841
+#     components: [dsmr]    
 
 ethernet:
   type: W5500
