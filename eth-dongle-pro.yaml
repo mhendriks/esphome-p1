@@ -18,13 +18,9 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
 
-external_components:
-  - source: my_components
-    components: [ dsmr ]
-#   - source: github://mhendriks/esphome-p1@main
-#     components: [dsmr]
-#   - source: github://pr#6841
-#     components: [dsmr]  
+# external_components:
+#   - source: my_components
+#     components: [ dsmr ]
           
 ethernet:
   type: W5500
@@ -191,8 +187,8 @@ text_sensor:
       name: "DSMR Version Belgium"
     gas_equipment_id:
         name: "Gas meter ID"
-    equipment_id:
-        name: "Smart meter ID"
+#     equipment_id:
+#         name: "Smart meter ID"
   - platform: version
     name: "_ESPHome Version"
     hide_timestamp: true
