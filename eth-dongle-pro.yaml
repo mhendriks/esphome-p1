@@ -2,7 +2,7 @@ substitutions:
   device_name: eth-dongle-pro
   device_description: "P1 Dongle Pro with ethernet access"
   friendly_name: ETH Dongle Pro
-  prj_version: "2024.6.1"
+  prj_version: "2024.11.1"
 
 esphome:
   name: ${device_name}
@@ -18,11 +18,13 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
 
-# external_components:
-# #   - source: github://mhendriks/esphome-p1@main
-#   - source: my_components
-#     components: [ ethernet ]
-
+external_components:
+  - source: my_components
+    components: [ dsmr ]
+#   - source: github://mhendriks/esphome-p1@main
+#     components: [dsmr]
+#   - source: github://pr#6841
+#     components: [dsmr]  
           
 ethernet:
   type: W5500
@@ -31,11 +33,6 @@ ethernet:
   mosi_pin: 6
   miso_pin: 5
   interrupt_pin: 1
-#   clock_speed: 25
-#   manual_ip:
-#     static_ip: 192.168.2.123
-#     gateway: 192.168.2.1
-#     subnet: 255.255.255.0
      
 ota:
   platform: esphome
@@ -168,6 +165,9 @@ sensor:
     gas_delivered:
       name: "Gas Consumed"
       state_class: total_increasing
+    water_delivered:
+      name: Water delivered
+      state_class: total_increasing
 #for Belgium users
     gas_delivered_be:
       name: "Gas Consumed Belgium"
@@ -183,12 +183,16 @@ sensor:
       
 text_sensor:
   - platform: dsmr
-    identification:
-      name: "DSMR Identification"
+#     identification:
+#       name: "DSMR Identification"
     p1_version:
       name: "DSMR Version"
     p1_version_be:
       name: "DSMR Version Belgium"
+    gas_equipment_id:
+        name: "Gas meter ID"
+    equipment_id:
+        name: "Smart meter ID"
   - platform: version
     name: "_ESPHome Version"
     hide_timestamp: true
