@@ -68,8 +68,15 @@ uart:
     rx_pin:
       number: 18
       inverted: true
-    baud_rate: 115200
+    baud_rate: 115200 #dsmr4/5
     rx_buffer_size: 1700
+#---- below dsmr2
+#     baud_rate: 9600
+#     data_bits: 7
+#     parity: EVEN
+#     stop_bits: 1
+#---- end dsmr2
+
   - id: p1_bridge_uart
     tx_pin:
       number: 21
@@ -84,7 +91,9 @@ dsmr:
     number: 17
     inverted: true
  water_mbus_id: 2
-  
+#  crc_check: false #dsmr2
+
+
 globals:
   - id: tot_count
     type: float
