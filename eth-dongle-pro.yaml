@@ -2,7 +2,7 @@ substitutions:
   device_name: eth-dongle-pro
   device_description: "P1 Dongle Pro with ethernet access"
   friendly_name: ETH Dongle Pro
-  prj_version: "2024.12.1"
+  prj_version: "2025.1.1"
 
 esphome:
   name: ${device_name}
@@ -17,10 +17,6 @@ esphome:
 
 esp32:
   board: esp32-c3-devkitm-1
-
-# external_components:
-#   - source: my_components
-#     components: [ dsmr ]
           
 ethernet:
   type: W5500
@@ -56,8 +52,9 @@ dsmr:
  id: dsmr_instance
  receive_timeout: 200ms
  max_telegram_length: 1700
-#  water_mbus_id: 1 //change mbus position of water meter
 #  gas_mbus_id: 2 //change mbus position of gas meter
+ water_mbus_id: 2
+#  crc_check: false #dsmr2
 
 button:  
   - platform: restart
@@ -65,7 +62,61 @@ button:
     id: reboot
   - platform: factory_reset
     name: "_Restart with Factory Default Settings"
-      
+
+light:
+  - platform: status_led
+    name: "status led"
+    output: status_output
+    internal: true
+  - platform: neopixelbus
+    variant: WS2812
+    pin: 8
+    num_leds: 1
+    name: "_Status LED"
+    id: esp32c3_rgb_led
+    entity_category: config
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+switch:
+  - platform: template
+    id: status_led_switch
+    # name: "Status LED Switch"
+    optimistic: true
+    on_turn_on:
+      - light.turn_on: 
+          id: esp32c3_rgb_led
+          red:   0%
+          green: 0%
+          blue: 100%
+          brightness: 40%
+          transition_length: 50ms
+    on_turn_off:
+      - light.turn_off: 
+          id: esp32c3_rgb_led
+          transition_length: 50ms
+
+output:
+  - platform: template
+    id: status_output
+    type: binary
+    write_action:
+      - if:
+          condition:
+             lambda: return state > 0;
+          then:
+            - if:
+                condition:
+                  switch.is_off: status_led_switch
+                then:
+                  switch.turn_on: status_led_switch
+          else:
+            - if:
+                condition:
+                  switch.is_on: status_led_switch
+                then:
+                  switch.turn_off: status_led_switch
+
 sensor:
   - platform: dsmr
 # #    energy_delivered_lux:
