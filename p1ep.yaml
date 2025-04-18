@@ -1,0 +1,222 @@
+substitutions:
+  device_name: eth-dongle-pro
+  device_description: "Ethernet P1 Dongle Pro+"
+  friendly_name: Ethernet P1 Dongle Pro+
+  prj_version: "2025.2.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  platformio_options:
+    upload_speed: 1500000
+    board_build.flash_mode: dio
+    
+  project: 
+    name: "smartstuff.eth_dongle_pro"
+    version: ${prj_version}
+
+esp32:
+  board: esp32-c3-devkitm-1
+          
+ethernet:
+  type: W5500
+  cs_pin: 1
+  clk_pin: 10
+  mosi_pin: 5
+  miso_pin: 4
+  interrupt_pin: 6
+    
+ota:
+  platform: esphome
+  
+web_server:
+    
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/p1ep.yaml@main
+
+# logger:
+#   level: ERROR
+
+api:
+  
+uart:
+  - id: p1_uart
+    rx_pin:
+      number: 0
+      inverted: true
+    baud_rate: 115200
+    rx_buffer_size: 1700
+  - id: p1_bridge_uart
+    tx_pin:
+      number: 7
+    baud_rate: 115200
+    
+dsmr:
+ id: dsmr_instance
+ uart_id: p1_uart
+ receive_timeout: 200ms
+ max_telegram_length: 1700
+#  gas_mbus_id: 2 //change mbus position of gas meter
+ water_mbus_id: 2
+#  crc_check: false #dsmr2
+
+button:  
+  - platform: restart
+    name: "_Restart device"
+    id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+
+status_led:
+  pin:
+    number: 8
+    inverted: true
+    id: led
+    
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 9
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: _PushButton
+
+
+sensor:
+  - platform: dsmr
+# #    energy_delivered_lux:
+# #      name: "Energy Consumed Luxembourg"
+# #      state_class: total_increasing
+# #    energy_returned_lux:
+# #      name: "Energy Produced Luxembourg"
+# #      state_class: total_increasing
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned:
+      name: "Power Produced"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    electricity_failures:
+      name: "Electricity Failures"
+      icon: mdi:alert
+    electricity_long_failures:
+      name: "Long Electricity Failures"
+      icon: mdi:alert
+    voltage_l1:
+      name: "Voltage Phase 1"
+    voltage_l2:
+      name: "Voltage Phase 2"
+    voltage_l3:
+      name: "Voltage Phase 3"
+    current_l1:
+      name: "Current Phase 1"
+    current_l2:
+      name: "Current Phase 2"
+    current_l3:
+      name: "Current Phase 3"
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l1:
+      name: "Power Produced Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l2:
+      name: "Power Produced Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l3:
+      name: "Power Produced Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    gas_delivered:
+      name: "Gas Consumed"
+      state_class: total_increasing
+    water_delivered:
+      name: Water delivered
+      state_class: total_increasing
+#for Belgium users
+    gas_delivered_be:
+      name: "Gas Consumed Belgium"
+      state_class: total_increasing
+    active_energy_import_current_average_demand:
+      name: "Current Average Demand"
+    active_energy_import_maximum_demand_running_month:
+      name: "Maximum Month Demand"
+    active_energy_import_maximum_demand_last_13_months:
+      name: "13 Month Maximum Quarterly Demand"      
+  - platform: uptime
+    name: "_Uptime"
+      
+text_sensor:
+  - platform: dsmr
+    telegram:
+      name: "telegram"
+      disabled_by_default: true
+      on_value:
+        then:
+          - lambda: |-
+              p1_bridge_uart->write_str(x.c_str());
+  - platform: dsmr
+#     identification:
+#       name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    p1_version_be:
+      name: "DSMR Version Belgium"
+    gas_equipment_id:
+        name: "Gas meter ID"
+#     equipment_id:
+#         name: "Smart meter ID"
+  - platform: version
+    name: "_ESPHome Version"
+    hide_timestamp: true
