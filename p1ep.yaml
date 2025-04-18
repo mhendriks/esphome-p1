@@ -2,7 +2,7 @@ substitutions:
   device_name: eth-dongle-pro
   device_description: "Ethernet P1 Dongle Pro+"
   friendly_name: Ethernet P1 Dongle Pro+
-  prj_version: "2025.2.1"
+  prj_version: "2025.4.1"
 
 esphome:
   name: ${device_name}
