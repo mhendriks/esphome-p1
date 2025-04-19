@@ -1,7 +1,7 @@
 substitutions:
   device_name: waterlezer
   device_description: Water meter sensor 
-  version: "v24.06.01"
+  version: "v25.04.01"
 
 esphome:
   name: ${device_name}
@@ -116,13 +116,13 @@ sensor:
 text_sensor:
   - platform: wifi_info
     ip_address:
-      name: IP-adres
+      name: "IP-adres"
       icon: mdi:ip-network
     ssid:
-      name: Netwerk
+      name: "Netwerk"
       icon: mdi:access-point-network
     mac_address:
-      name: Mac-adres
+      name: "Mac-adres"
       icon: mdi:folder-key-network-outline
       
       
