@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-dongle
   device_description: "Ultra dongle with all in one"
   friendly_name: Ultra All in One 
-  prj_version: "2024.10.1"
+  prj_version: "2025.03.1"
 
 esphome:
   name: ${device_name}
@@ -377,6 +377,8 @@ text_sensor:
           - lambda: |-
               p1_bridge_uart->write_str(x.c_str());
   - platform: dsmr
+    electricity_tariff:
+      name: "DSMR tariff"
     identification:
       name: "DSMR Identification"
     p1_version:
