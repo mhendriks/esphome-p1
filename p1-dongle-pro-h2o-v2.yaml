@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro-h2o
   device_description: "P1 Dongle Pro + H2O v2"
   friendly_name: P1 Dongle Pro H2O
-  prj_version: "2024.7.1"
+  prj_version: "2024.08.01"
 
 esphome:
   name: ${device_name}
@@ -13,6 +13,7 @@ esphome:
     version: ${prj_version}
   platformio_options:
     upload_speed: 1500000
+  
     
 esp32:
   board: esp32-c3-devkitm-1
@@ -62,8 +63,6 @@ external_components:
   - source: github://pr#6841
     components: [dsmr]
 
-
-  
 # Enable logging
 logger:
   level: ERROR
@@ -106,12 +105,15 @@ button:
 binary_sensor:
   - platform: gpio
     pin:
+      id: rst_button
       number: 9
       inverted: true
+      ignore_strapping_warning: true
       mode:
         input: true
         pullup: true
     name: _PushButton
+    
     on_press:
       then:
         - button.press: reboot
