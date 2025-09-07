@@ -16,6 +16,8 @@ esphome:
     
 esp32:
   board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
 
 improv_serial:
   next_url: http://{{ip_address}}
@@ -201,6 +203,8 @@ text_sensor:
       name: "DSMR Version"
     p1_version_be:
       name: "DSMR Version Belgium"
+    electricity_tariff:
+      name: "Current tariff"
   - platform: wifi_info
     ip_address:
       name: "IP Address"
