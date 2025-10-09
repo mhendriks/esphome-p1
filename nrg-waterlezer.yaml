@@ -1,0 +1,165 @@
+substitutions:
+  device_name: nrg-waterlezer
+  device_description: "NRG Dongle Pro+ Waterlezer"
+  friendly_name: NRG Dongle Pro Waterlezer
+  prj_version: "2025.04.01"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  name_add_mac_suffix: false
+  project: 
+    name: "smartstuff.nrg_dongle_pro_h2o"
+    version: ${prj_version}
+  platformio_options:
+    upload_speed: 1500000
+    
+esp32:
+  board: esp32-c3-devkitm-1
+  
+improv_serial:
+  next_url: http://{{ip_address}}
+
+api:
+  services:
+    - service: p1_dongle_reboot
+      then:
+        - button.press:
+            id: reboot                        
+    - service: set_water_reading
+      variables:
+        meter_value: int
+      then:
+        - globals.set:
+            id: totalWaterUsage
+            value: !lambda "return ( meter_value );"                       
+
+globals:
+  - id: totalWaterUsage
+    type: int
+    restore_value: true      # aanpassen naar no indien de nieuwe waarde onder de oude ligt
+    initial_value: '0'       # beginstand van je watermeter -> aanpassen via Home Assistant services
+
+ota:
+  platform: esphome
+  
+captive_portal:
+web_server:
+wifi:
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${device_name}
+    ap_timeout: 15s
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/nrg-waterlezer.yaml@main
+
+external_components:
+#   - source: my_components
+#     components: [ dsmr ]
+#   - source: github://mhendriks/esphome-p1@main
+#     components: [dsmr]
+  - source: github://pr#6841
+    components: [dsmr]
+
+# Enable logging
+logger:
+  level: ERROR
+
+dsmr:
+  uart_id: p1_uart
+  water_mbus_id: 2
+  max_telegram_length: 1700
+  
+uart:
+  - id: p1_uart
+    rx_pin:
+      number: 20
+      inverted: true
+    baud_rate: 115200
+    rx_buffer_size: 1700
+  - id: p1_bridge_uart
+    tx_pin:
+      number: 10
+    baud_rate: 115200
+  
+status_led:
+  pin:
+    number: 3
+    inverted: true
+    id: led 
+
+button:  
+  - platform: restart
+    name: "_Restart device"
+    id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+  - platform: template
+    name: "_Reset - Total Water Counter"
+    id: button_reset_total
+    on_press:
+      - globals.set:
+          id: totalWaterUsage
+          value: "0"      
+      
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 9
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: _PushButton
+    on_press:
+      then:
+        - button.press: reboot
+      
+sensor:
+  - platform: pulse_counter
+    pin: 
+      number: 6
+      mode:
+        input: true
+#         pullup: true
+    id: watermeter_pulse
+    name: "Watermeter pulse"
+    count_mode:
+      rising_edge: DISABLE
+      falling_edge: INCREMENT
+    state_class: measurement
+    update_interval: 1s
+    internal_filter: 13us
+    accuracy_decimals: 0
+    unit_of_measurement: 'L/min'
+  
+  - platform: template
+    name: "Watermeter total"
+    state_class: "total_increasing"
+    device_class: "water"
+    icon: mdi:water
+    update_interval: 1s
+    unit_of_measurement: L
+    accuracy_decimals: 0
+    lambda: |-
+      if (id(watermeter_pulse).state > 0) id(totalWaterUsage) += 1;
+      return id(totalWaterUsage);
+
+  - platform: uptime
+    name: "_Uptime"
+  - platform: wifi_signal
+    name: "_Wi-Fi Signal"
+    update_interval: 60s
+      
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "_IP Address"
+    ssid:
+      name: "_Wi-Fi SSID"
+    bssid:
+      name: "_Wi-Fi BSSID"
+  - platform: version
+    name: "_ESPHome Version"
+    hide_timestamp: true
