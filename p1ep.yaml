@@ -2,7 +2,7 @@ substitutions:
   device_name: eth-dongle-pro
   device_description: "Ethernet P1 Dongle Pro+"
   friendly_name: Ethernet P1 Dongle Pro+
-  prj_version: "2025.4.1"
+  prj_version: "2025.10.1"
 
 esphome:
   name: ${device_name}
@@ -17,6 +17,13 @@ esphome:
 
 esp32:
   board: esp32-c3-devkitm-1
+  framework:
+    type: arduino #esp-idf
+          
+external_components:
+#   - source: github://mhendriks/esphome-p1@main
+#   - source: my_components
+#     components: [ dsmr ]          
           
 ethernet:
   type: W5500
@@ -34,8 +41,8 @@ web_server:
 dashboard_import:
   package_import_url: github://mhendriks/esphome-p1/p1ep.yaml@main
 
-# logger:
-#   level: ERROR
+logger:
+  level: ERROR
 
 api:
   
@@ -72,11 +79,13 @@ status_led:
     number: 8
     inverted: true
     id: led
+    ignore_strapping_warning: true
     
 binary_sensor:
   - platform: gpio
     pin:
       number: 9
+      ignore_strapping_warning: true
       inverted: true
       mode:
         input: true
