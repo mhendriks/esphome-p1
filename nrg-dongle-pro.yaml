@@ -2,7 +2,7 @@ substitutions:
   device_name: nrg-dongle-pro
   device_description: "P1 Dongle Pro+ (ESP32) module to read your smart meter"
   friendly_name: NRG Dongle Pro ( P1 Dongle Pro+ )
-  prj_version: "25.10.01"
+  prj_version: "25.11.01"
 
 esphome:
   name: ${device_name}
@@ -63,7 +63,7 @@ logger:
 dsmr:
   water_mbus_id: 2
   uart_id: p1_uart
-  max_telegram_length: 1700
+  max_telegram_length: 2400
 
 uart:
   - id: p1_uart
