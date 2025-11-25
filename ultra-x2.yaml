@@ -1,8 +1,8 @@
 substitutions:
   device_name: ultra-dongle
-  device_description: "Ultra V2 dongle with all in one"
-  friendly_name: Ultra V2 All in One 
-  prj_version: "2025.10.1"
+  device_description: "Ultra X2 dongle with all in one"
+  friendly_name: Ultra X2 All in One 
+  prj_version: "2025.11.1"
 
 esphome:
   name: ${device_name}
@@ -27,6 +27,7 @@ ethernet:
   mosi_pin: 16
   miso_pin: 15
   interrupt_pin: 18
+  reset_pin: 17
   
 ota:
   platform: esphome
@@ -63,7 +64,7 @@ uart:
       number: 12
       inverted: true
     baud_rate: 115200 #dsmr4/5
-    rx_buffer_size: 1700
+    rx_buffer_size: 2400
 #---- below dsmr2
 #     baud_rate: 9600
 #     data_bits: 7
@@ -81,9 +82,6 @@ dsmr:
  id: dsmr_instance
  receive_timeout: 200ms
  max_telegram_length: 1700
- request_pin: 
-    number: 17
-    inverted: true
  water_mbus_id: 2
 #  crc_check: false #dsmr2
 
