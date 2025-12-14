@@ -2,7 +2,7 @@ substitutions:
   device_name: nrg-dongle-pro
   device_description: "NRG Dongle Pro + H2O"
   friendly_name: NRG Dongle Pro H2O with water sensor
-  prj_version: "25.07.01"
+  prj_version: "25.12.01"
 
 esphome:
   name: ${device_name}
@@ -16,6 +16,8 @@ esphome:
     
 esp32:
   board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
   
 improv_serial:
   next_url: http://{{ip_address}}
@@ -94,12 +96,13 @@ button:
       - globals.set:
           id: totalWaterUsage
           value: "0"      
-      
+
 binary_sensor:
   - platform: gpio
     pin:
       number: 9
       inverted: true
+      ignore_strapping_warning: true
       mode:
         input: true
         pullup: true
