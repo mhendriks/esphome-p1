@@ -2,7 +2,7 @@ substitutions:
   device_name: s0-dongle
   device_description: "S0 module to read S0 interfaces (pulse counters)"
   friendly_name: S0 Dongle
-  p_version: "v24.06.01"
+  p_version: "v26.01.01"
 
 esphome:
   name: ${device_name}
@@ -37,6 +37,7 @@ wifi:
   ap:
     ssid: ${device_name}
     ap_timeout: 15s
+  min_auth_mode: WPA
     
 dashboard_import:
   package_import_url: github://mhendriks/esphome-p1/s0-dongle.yaml
@@ -130,7 +131,7 @@ sensor:
 
   - platform: total_daily_energy
     name: 'S0 Daily Energy'
-    id:   
+    id: s0_daily_energy   
     power_id: pulse
     unit_of_measurement: 'kWh'
     icon: mdi:circle-slice-3
