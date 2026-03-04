@@ -51,8 +51,12 @@ uart:
     rx_pin:
       number: 0
       inverted: true
-    baud_rate: 115200
-    rx_buffer_size: 1700
+    baud_rate: 115200 #v4 & 5 smart meter
+#     baud_rate: 9600 #v2 smart meter
+#     data_bits: 7 #v2 smart meter
+#     parity: EVEN #v2 smart meter
+#     stop_bits: 1 #v2 smart meter
+    rx_buffer_size: 2400
   - id: p1_bridge_uart
     tx_pin:
       number: 7
@@ -62,7 +66,7 @@ dsmr:
  id: dsmr_instance
  uart_id: p1_uart
  receive_timeout: 200ms
- max_telegram_length: 1700
+ max_telegram_length: 2400
 #  gas_mbus_id: 2 //change mbus position of gas meter
  water_mbus_id: 2
 #  crc_check: false #dsmr2
