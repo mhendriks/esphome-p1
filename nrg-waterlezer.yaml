@@ -2,7 +2,7 @@ substitutions:
   device_name: nrg-waterlezer
   device_description: "NRG Dongle Pro+ Waterlezer"
   friendly_name: NRG Dongle Pro Waterlezer
-  prj_version: "2025.12.01"
+  prj_version: "2026.03.01"
 
 esphome:
   name: ${device_name}
@@ -101,13 +101,13 @@ sensor:
       number: 6
       mode:
         input: true
-#         pullup: true
     id: watermeter_pulse
     name: "Watermeter pulse"
     count_mode:
       rising_edge: DISABLE
       falling_edge: INCREMENT
     state_class: measurement
+    device_class: volume_flow_rate
     update_interval: 1s
     internal_filter: 13us
     accuracy_decimals: 0
