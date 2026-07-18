@@ -2,7 +2,7 @@ substitutions:
   device_name: ultra-dongle
   device_description: "Ultra X2 dongle with all in one"
   friendly_name: Ultra X2 All in One 
-  prj_version: "2025.11.1"
+  prj_version: "2026.7.1"
 
 esphome:
   name: ${device_name}
@@ -13,14 +13,25 @@ esphome:
     version: ${prj_version}
   platformio_options:
     upload_speed: 1500000
+  on_boot:
+    - priority: -100
+      then:
+        - pulse_meter.set_total_pulses:
+            id: watermeter_pulse
+            value: !lambda 'return id(saved_water_pulses);'
+        - globals.set:
+            id: water_counter_ready
+            value: 'true'
     
 esp32:
   variant: esp32s3
   board: esp32-s3-devkitc-1  
   framework:
     type: arduino
+#     type: esp-idf
     
 ethernet:
+  id: ethernet_connection
   type: W5500
   cs_pin: 13
   clk_pin: 14
@@ -28,6 +39,14 @@ ethernet:
   miso_pin: 15
   interrupt_pin: 18
   reset_pin: 17
+  
+  on_connect:
+    then:
+      - script.execute: show_ethernet_status
+
+  on_disconnect:
+    then:
+      - script.execute: show_ethernet_status
   
 ota:
   platform: esphome
@@ -38,12 +57,13 @@ web_server:
 #   next_url: http://{{ip_address}}
 
 api:
-  services:
-    - service: p1_dongle_reboot
+  reboot_timeout: 0s
+  actions:
+    - action: p1_dongle_reboot
       then:
         - button.press:
             id: reboot                        
-    - service: set_water_total
+    - action: set_water_total
       variables:
         new_total: int
       then:
@@ -56,8 +76,49 @@ dashboard_import:
   
 # Enable logging
 logger:
-  level: error
+  level: WARN
 
+debug:
+  update_interval: 60s
+
+script:
+  - id: show_ethernet_status
+    mode: restart
+    then:
+      - if:
+          condition:
+            ethernet.connected:
+              id: ethernet_connection
+          then:
+            - light.turn_on:
+                id: esp32_rgb_led
+                red: 0%
+                green: 100%
+                blue: 0%
+                brightness: 40%
+                transition_length: 0ms
+          else:
+            - light.turn_on:
+                id: esp32_rgb_led
+                red: 100%
+                green: 0%
+                blue: 0%
+                brightness: 40%
+                transition_length: 0ms
+
+  - id: flash_dsmr_telegram
+    mode: restart
+    then:
+      - light.turn_on:
+          id: esp32_rgb_led
+          red: 0%
+          green: 0%
+          blue: 100%
+          brightness: 60%
+          transition_length: 0ms
+      - delay: 75ms
+      - script.execute: show_ethernet_status
+                
 uart:
   - id: p1_uart
     rx_pin:
@@ -81,16 +142,20 @@ dsmr:
  uart_id: p1_uart
  id: dsmr_instance
  receive_timeout: 200ms
- max_telegram_length: 1700
+ max_telegram_length: 2400
  water_mbus_id: 2
 #  crc_check: false #dsmr2
 
 
 globals:
-  - id: tot_count
-    type: float
-    restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
-    initial_value: '0'   # beginstand  -> aanpassen via Home Assistant services
+  - id: saved_water_pulses
+    type: uint32_t
+    restore_value: yes
+    initial_value: '0'  # eenmalig instellen via de Home Assistant-action set_water_total
+  - id: water_counter_ready
+    type: bool
+    restore_value: no
+    initial_value: 'false'
   - id: pulse_rate
     type: int
     restore_value: no  # aanpassen naar no indien de nieuwe waarde onder de oude ligt
@@ -98,10 +163,6 @@ globals:
 
    
 light:
-  - platform: status_led
-    name: "status led"
-    output: status_output
-    internal: true
   - platform: esp32_rmt_led_strip
     id: esp32_rgb_led
     name: "_Status LED"
@@ -112,28 +173,7 @@ light:
     internal: true
     restore_mode: ALWAYS_OFF
     entity_category: config
-    gamma_correct: false 
-
-output:
-  - platform: template
-    id: status_output
-    type: binary
-    write_action:
-      - if:
-          condition:
-            lambda: 'return state;'
-          then:
-            - light.turn_on:
-                id: esp32_rgb_led
-                red: 0%
-                green: 0%
-                blue: 100%
-                brightness: 60%     # mag je terugzetten naar 40% als je wilt
-                transition_length: 0ms
-          else:
-            - light.turn_off:
-                id: esp32_rgb_led
-                transition_length: 0ms
+    gamma_correct: false
 
 button:  
   - platform: restart
@@ -142,7 +182,7 @@ button:
   - platform: factory_reset
     name: "_Restart with Factory Default Settings"
   - platform: template
-    name: "_Reset - Total Energy"
+    name: "_Reset - S0 Total Energy"
     id: button_reset_total
     on_press:
       - pulse_meter.set_total_pulses:
@@ -159,20 +199,6 @@ binary_sensor:
         input: true
         pullup: true
     name: _PushButton
-    on_press:
-      - if:
-          condition:
-            light.is_on: esp32_rgb_led
-          then:
-            - light.turn_off: esp32_rgb_led
-          else:
-            - light.turn_on:
-                id: esp32_rgb_led
-                red: 0%
-                green: 0%
-                blue: 100%
-                brightness: 60%
-                transition_length: 0ms 
 
 time:
   - platform: homeassistant
@@ -181,7 +207,7 @@ time:
          
 sensor: 
   - platform: pulse_meter
-    name: "Watermeter pulse"
+    name: "Water flow"
     pin: 
       number: 38 #left connector
       mode:
@@ -189,19 +215,29 @@ sensor:
         pullup: true 
     id: watermeter_pulse
     state_class: measurement
-    unit_of_measurement: 'L'
-    device_class: water
-    internal_filter: 13us
+    unit_of_measurement: 'L/min'
+    device_class: volume_flow_rate
+    internal_filter: 250ms
     internal_filter_mode: EDGE
-    icon: mdi:flash-outline
-    accuracy_decimals: 0
+    icon: mdi:water-pump
+    accuracy_decimals: 1
     total:
+      id: water_total
       name: "Water Total"
       device_class: water
       state_class: total_increasing
       icon: mdi:water
       unit_of_measurement: L
-      accuracy_decimals: 0    
+      accuracy_decimals: 0
+      on_value:
+        then:
+          - if:
+              condition:
+                lambda: return id(water_counter_ready);
+              then:
+                - globals.set:
+                    id: saved_water_pulses
+                    value: !lambda 'return static_cast<uint32_t>(x);'
       
   - platform: pulse_meter
     id: pulse
@@ -355,8 +391,12 @@ sensor:
       name: "13 Month Maximum Quarterly Demand"    
   - platform: uptime
     name: "_Uptime"
-  
+
 text_sensor:
+  - platform: debug
+    reset_reason:
+      name: "_Reset Reason"
+      entity_category: diagnostic
   - platform: dsmr
     telegram:
       name: "telegram"
@@ -365,6 +405,7 @@ text_sensor:
         then:
           - lambda: |-
               p1_bridge_uart->write_str(x.c_str());
+          - script.execute: flash_dsmr_telegram
   - platform: dsmr
     electricity_tariff:
       name: "DSMR tariff"
