@@ -2,7 +2,7 @@ substitutions:
   device_name: nrg-dongle-pro
   device_description: "P1 Dongle Pro+ (ESP32) module to read your smart meter"
   friendly_name: NRG Dongle Pro ( P1 Dongle Pro+ )
-  prj_version: "25.11.01"
+  prj_version: "2026.10.1"
 
 esphome:
   name: ${device_name}
@@ -225,7 +225,10 @@ text_sensor:
       on_value:
         then:
           - lambda: |-
+              // ESPHome's DSMR text sensor ends at the CRC digits. A P1
+              // telegram must be terminated with CRLF for strict readers.
               p1_bridge_uart->write_str(x.c_str());
+              p1_bridge_uart->write_str("\r\n");
     identification:
       name: "DSMR Identification"
     p1_version:

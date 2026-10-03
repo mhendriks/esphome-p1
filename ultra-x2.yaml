@@ -1,8 +1,8 @@
 substitutions:
   device_name: ultra-dongle
-  device_description: "Ultra X2 dongle with all in one"
+  device_description: "Ultra X2 dongle All in One"
   friendly_name: Ultra X2 All in One 
-  prj_version: "2026.7.1"
+  prj_version: "2026.10.1"
 
 esphome:
   name: ${device_name}
@@ -27,8 +27,8 @@ esp32:
   variant: esp32s3
   board: esp32-s3-devkitc-1  
   framework:
-    type: arduino
-#     type: esp-idf
+#     type: arduino
+    type: esp-idf
     
 ethernet:
   id: ethernet_connection
@@ -181,6 +181,7 @@ button:
     id: reboot
   - platform: factory_reset
     name: "_Restart with Factory Default Settings"
+    id: factory_reset_button
   - platform: template
     name: "_Reset - S0 Total Energy"
     id: button_reset_total
@@ -199,6 +200,19 @@ binary_sensor:
         input: true
         pullup: true
     name: _PushButton
+    filters:
+      - delayed_on: 20ms
+      - delayed_off: 20ms
+    on_multi_click:
+      - timing:
+          - ON for at most 3s
+          - OFF for at least 50ms
+        then:
+          - button.press: reboot
+      - timing:
+          - ON for at least 6s
+        then:
+          - button.press: factory_reset_button
 
 time:
   - platform: homeassistant
@@ -404,7 +418,10 @@ text_sensor:
       on_value:
         then:
           - lambda: |-
+              // ESPHome's DSMR text sensor ends at the CRC digits. A P1
+              // telegram must be terminated with CRLF for strict readers.
               p1_bridge_uart->write_str(x.c_str());
+              p1_bridge_uart->write_str("\r\n");
           - script.execute: flash_dsmr_telegram
   - platform: dsmr
     electricity_tariff:
