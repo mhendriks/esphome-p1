@@ -2,7 +2,7 @@ substitutions:
   device_name: p1-dongle-pro-h2o
   device_description: "P1 Dongle Pro + H2O v2"
   friendly_name: P1 Dongle Pro H2O
-  prj_version: "2025.10.01"
+  prj_version: "2026.11.01"
 
 esphome:
   name: ${device_name}
@@ -264,6 +264,7 @@ text_sensor:
         then:
           - lambda: |-
               p1_bridge_uart->write_str(x.c_str());
+              p1_bridge_uart->write_str("\r\n");
   - platform: dsmr
     identification:
       name: "DSMR Identification"
