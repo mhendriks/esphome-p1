@@ -1,0 +1,15 @@
+# Device configuration; shared behavior is maintained in packages/.
+substitutions:
+  device_description: "Wifi adapter to read your water meter"
+  friendly_name: Wifi Adapter Waterlezer (W1MC)
+
+packages:
+  base: !include packages/w1mc-base.yaml
+  water: !include packages/w1mc-water.yaml
+
+esphome:
+  project:
+    name: "smartstuff.w1mc_waterlezer"
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/w1mc-waterlezer.yaml@main

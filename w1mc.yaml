@@ -1,0 +1,15 @@
+# Device configuration; shared behavior is maintained in packages/.
+substitutions:
+  device_description: "Wifi adapter to read your smart meter"
+  friendly_name: Wifi Adapter (W1MC)
+
+packages:
+  base: !include packages/w1mc-base.yaml
+  p1: !include packages/w1mc-p1.yaml
+
+esphome:
+  project:
+    name: "smartstuff.w1mc_dongle"
+
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/w1mc.yaml@main

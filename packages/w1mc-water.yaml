@@ -1,0 +1,87 @@
+# H2O module on GPIO6: pulse counting, persistent total and meter-reading action.
+substitutions:
+  # Default conversion from P1-Dongel-ESP32: WtrFactor=1 liter per pulse.
+  water_liters_per_pulse: "1.0"
+  # Suppress short signal glitches; this is not a minimum interval between liters.
+  water_pulse_filter: 100ms
+
+esphome:
+  on_boot:
+    # Globals are restored at priority 800; the pulse counter is set up at 600.
+    # Restore the raw counter before networking starts.
+    - priority: 500
+      then:
+        - pulse_counter.set_total_pulses:
+            id: watermeter_pulse
+            value: !lambda 'return id(water_total_pulses);'
+        - globals.set:
+            id: water_total_ready
+            value: 'true'
+
+globals:
+  - id: water_total_pulses
+    type: uint32_t
+    restore_value: true
+    initial_value: '0'
+  - id: water_total_ready
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+api:
+  services:
+    # meter_value is the actual meter reading in whole liters (e.g. 123456 = 123.456 m3).
+    - service: set_water_reading
+      variables:
+        meter_value: int
+      then:
+        - if:
+            condition:
+              lambda: 'return meter_value >= 0;'
+            then:
+              - pulse_counter.set_total_pulses:
+                  id: watermeter_pulse
+                  value: !lambda 'return (uint32_t) lround(meter_value / ${water_liters_per_pulse});'
+
+sensor:
+  # W1MC module_config[4].wtr_s0 = GPIO6; use the H2O v2 falling-edge counting mode.
+  - platform: pulse_counter
+    id: watermeter_pulse
+    name: "Watermeter flow"
+    pin:
+      number: 6
+      mode:
+        input: true
+        pullup: true
+    # Software counting allows a millisecond filter (hardware PCNT is limited to 13us).
+    use_pcnt: false
+    count_mode:
+      rising_edge: DISABLE
+      falling_edge: INCREMENT
+    internal_filter: ${water_pulse_filter}
+    update_interval: 1s
+    unit_of_measurement: "L/min"
+    device_class: volume_flow_rate
+    state_class: measurement
+    accuracy_decimals: 2
+    icon: mdi:water-pump
+    filters:
+      - multiply: ${water_liters_per_pulse}
+    total:
+      id: watermeter_total
+      name: "Watermeter total"
+      unit_of_measurement: "m³"
+      device_class: water
+      state_class: total_increasing
+      accuracy_decimals: 3
+      icon: mdi:water
+      filters:
+        - multiply: ${water_liters_per_pulse}
+        - multiply: 0.001
+      # Store raw pulses, before conversion to m3, so restoration uses the same units.
+      on_raw_value:
+        then:
+          - lambda: |-
+              if (id(water_total_ready)) {
+                id(water_total_pulses) = (uint32_t) lroundf(x);
+              }

@@ -1,0 +1,234 @@
+# Shared W1MC hardware, networking, RGB LED, button and diagnostics.
+# Compose this with w1mc-p1.yaml and/or w1mc-water.yaml in the device YAML.
+substitutions:
+  device_name: nrg-gateway
+  prj_version: "2026.10.1"
+
+esphome:
+  name: ${device_name}
+  comment: "${device_description}" 
+  name_add_mac_suffix: false
+  project: 
+    version: ${prj_version}
+  platformio_options:
+    upload_speed: 1500000
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+improv_serial:
+  next_url: http://{{ip_address}}
+
+light:
+  - platform: status_led
+    name: "status led"
+    output: status_output
+    internal: true
+  - platform: esp32_rmt_led_strip
+    id: esp32_rgb_led
+    name: "_Status LED"
+    pin:
+      number: 8
+      ignore_strapping_warning: true
+    num_leds: 1
+    chipset: WS2812
+    channel_colors: GRB
+    internal: true
+    restore_mode: ALWAYS_OFF
+    gamma_correct: 1.0
+
+number:
+  - platform: template
+    id: rgb_brightness
+    name: "_RGB Brightness"
+    icon: mdi:brightness-6
+    entity_category: config
+    unit_of_measurement: "%"
+    mode: SLIDER
+    min_value: 0
+    max_value: 100
+    step: 1
+    initial_value: 100
+    optimistic: true
+    restore_value: true
+    on_value:
+      then:
+        - lambda: |-
+            // Update a lit LED immediately without changing its color or blink state.
+            // Explicit ON keeps brightness=0 dimmed, ready for the slider to rise again.
+            if (id(esp32_rgb_led).remote_values.is_on()) {
+              auto call = id(esp32_rgb_led).make_call();
+              call.set_state(true);
+              call.set_brightness(x / 100.0f);
+              call.set_transition_length(0);
+              call.perform();
+            }
+
+# Keep button feedback visible while the normal status LED is blinking.
+
+globals:
+  - id: button_action_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: button_pressed_at
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
+script:
+  - id: button_hold_feedback
+    mode: restart
+    then:
+      - delay: 6s
+      - logger.log:
+          tag: w1mc.button
+          level: INFO
+          format: "Button held for 6 seconds: red; factory reset on release"
+      - light.turn_on:
+          id: esp32_rgb_led
+          red: 100%
+          green: 0%
+          blue: 0%
+          brightness: !lambda 'return id(rgb_brightness).has_state() ? id(rgb_brightness).state / 100.0f : 1.0f;'
+          transition_length: 0ms
+
+output:
+  - platform: template
+    id: status_output
+    type: binary
+    write_action:
+      - if:
+          condition:
+            lambda: 'return !id(button_action_active);'
+          then:
+            - if:
+                condition:
+                  lambda: 'return state;'
+                then:
+                  - light.turn_on:
+                      id: esp32_rgb_led
+                      red: 0%
+                      green: 0%
+                      blue: 100%
+                      brightness: !lambda 'return id(rgb_brightness).has_state() ? id(rgb_brightness).state / 100.0f : 1.0f;'
+                      transition_length: 0ms
+                else:
+                  - light.turn_off:
+                      id: esp32_rgb_led
+                      transition_length: 0ms
+
+api:
+  services:
+    - service: p1_dongle_reboot
+      then:
+        - button.press:
+            id: reboot
+
+ota:
+  platform: esphome
+
+wifi:
+  power_save_mode: none
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${device_name}
+    ap_timeout: 15s
+
+captive_portal:
+
+web_server:
+  port: 80
+  
+# Enable logging
+
+logger:
+  level: ERROR
+  hardware_uart: USB_SERIAL_JTAG  # Keep GPIO UARTs available for optional modules.
+
+button:  
+  - platform: restart
+    name: "_Restart device"
+    id: reboot
+  - platform: factory_reset
+    name: "_Restart with Factory Default Settings"
+    id: reset_factory
+
+binary_sensor:
+  - platform: gpio
+    id: push_button
+    # Poll this human-operated button directly instead of relying on GPIO interrupts.
+    use_interrupt: false
+    pin:
+      number: 9
+      inverted: true
+      ignore_strapping_warning: true
+      mode:
+        input: true
+        pullup: true
+    
+    name: _PushButton
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      then:
+        - lambda: |-
+            id(button_pressed_at) = millis();
+            id(button_action_active) = true;
+        - logger.log:
+            tag: w1mc.button
+            level: INFO
+            format: "Button pressed: green"
+        - light.turn_on:
+            id: esp32_rgb_led
+            red: 0%
+            green: 100%
+            blue: 0%
+            brightness: !lambda 'return id(rgb_brightness).has_state() ? id(rgb_brightness).state / 100.0f : 1.0f;'
+            transition_length: 0ms
+        - script.execute: button_hold_feedback
+    on_release:
+      then:
+        # Ignore an initial released state without a preceding press.
+        - if:
+            condition:
+              lambda: 'return id(button_action_active);'
+            then:
+              - script.stop: button_hold_feedback
+              # Check elapsed time directly, including exactly 6000 ms.
+              - if:
+                  condition:
+                    lambda: 'return (uint32_t) (millis() - id(button_pressed_at)) >= 6000U;'
+                  then:
+                    - logger.log:
+                        tag: w1mc.button
+                        level: INFO
+                        format: "Button released after >= 6 seconds: factory reset"
+                    - button.press: reset_factory
+                  else:
+                    - logger.log:
+                        tag: w1mc.button
+                        level: INFO
+                        format: "Button released after < 6 seconds: reboot"
+                    - button.press: reboot
+
+sensor:
+  - platform: uptime
+    name: "Uptime"
+  - platform: wifi_signal
+    name: "Wi-Fi Signal"
+    update_interval: 60s
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Wi-Fi SSID"
+    bssid:
+      name: "Wi-Fi BSSID"
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true

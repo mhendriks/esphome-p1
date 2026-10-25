@@ -1,0 +1,166 @@
+# P1 input, DSMR entities and DTR-controlled P1 output for W1MC.
+dsmr:
+  water_mbus_id: 2
+  uart_id: p1_uart
+  max_telegram_length: 2400
+
+uart:
+  - id: p1_uart
+    rx_pin:
+      number: 1
+      inverted: true
+    baud_rate: 115200
+    rx_buffer_size: 2400
+  - id: p1_bridge_uart
+    tx_pin:
+      number: 4
+    baud_rate: 115200
+
+binary_sensor:
+  # W1MC device_config: P1 output request/DTR is active HIGH on GPIO10.
+  - platform: gpio
+    id: p1_bridge_dtr
+    name: "_P1 Bridge Request"
+    entity_category: diagnostic
+    use_interrupt: false
+    pin:
+      number: 10
+      mode:
+        input: true
+        pulldown: true
+
+sensor:
+  - platform: dsmr
+#    energy_delivered_lux:
+#      name: "Energy Consumed Luxembourg"
+#      state_class: total_increasing
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+      device_class: energy
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+      device_class: energy
+#    energy_returned_lux:
+#      name: "Energy Produced Luxembourg"
+#      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned:
+      name: "Power Produced"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    electricity_failures:
+      name: "Electricity Failures"
+      icon: mdi:alert
+    electricity_long_failures:
+      name: "Long Electricity Failures"
+      icon: mdi:alert
+    voltage_l1:
+      name: "Voltage Phase 1"
+    voltage_l2:
+      name: "Voltage Phase 2"
+    voltage_l3:
+      name: "Voltage Phase 3"
+    current_l1:
+      name: "Current Phase 1"
+    current_l2:
+      name: "Current Phase 2"
+    current_l3:
+      name: "Current Phase 3"
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l1:
+      name: "Power Produced Phase 1"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l2:
+      name: "Power Produced Phase 2"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l3:
+      name: "Power Produced Phase 3"
+      unit_of_measurement: "W"
+      state_class: "measurement"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    water_delivered:
+      name: Water delivered
+      state_class: total_increasing
+    gas_delivered:
+      name: "Gas Consumed"
+      state_class: total_increasing
+#for Belgium users
+    gas_delivered_be:
+      name: "Gas Consumed Belgium"
+      state_class: total_increasing
+    active_energy_import_current_average_demand:
+      name: "Current Average Demand"
+    active_energy_import_maximum_demand_running_month:
+      name: "Maximum Month Demand"
+    active_energy_import_maximum_demand_last_13_months:
+      name: "13 Month Maximum Quarterly Demand"
+
+text_sensor:
+  - platform: dsmr
+    telegram:
+      name: "telegram"
+      disabled_by_default: true
+      on_value:
+        then:
+          - lambda: |-
+              // Start a complete telegram only when the downstream reader requests data.
+              if (!id(p1_bridge_dtr).has_state() || !id(p1_bridge_dtr).state) {
+                return;
+              }
+              // ESPHome's DSMR text sensor ends at the CRC digits. A P1
+              // telegram must be terminated with CRLF for strict readers.
+              p1_bridge_uart->write_str(x.c_str());
+              p1_bridge_uart->write_str("\r\n");
+    identification:
+      name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    p1_version_be:
+      name: "DSMR Version Belgium"
