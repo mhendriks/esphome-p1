@@ -1,0 +1,194 @@
+# Watermeter nieuwe stijl / W1MC met seriele insteekmodule.
+# STM32 TX -> IO7 (GPIO7), gemeenschappelijke GND en passende voeding.
+# Zelfde BINARY1-ontvanger, entiteiten en opslag-ID als de Ultra X2-release.
+substitutions:
+  device_name: w1mc-watermeter
+  friendly_name: W1MC Watermeter
+  sensor_rx: GPIO7
+  release_build_path: build/w1mc-watermeter-release
+  product_version: "1.0.6"
+
+packages:
+  watermeter: !include packages/watermeter-release.yaml
+
+sensor:
+  - id: !extend water_meter_sensor
+    flow_rate:
+      name: "Waterdoorstroom"
+
+# Toekomstige publieke YAML, net als dashboard_import in w1mc.yaml.
+# Deze verwijzing haalt tijdens een lokale build niets van GitHub op.
+dashboard_import:
+  package_import_url: github://mhendriks/esphome-p1/w1mc-watermeter-release.yaml@main
+  import_full_config: false
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/mhendriks/esphome-p1
+      ref: main
+      path: components
+    refresh: 1d
+    components: [optical_water_meter_uart, w1mc_watermeter_support]
+
+w1mc_watermeter_support:
+
+# W1MC-hardwarebasis: mhendriks/esphome-p1/packages/w1mc-base.yaml.
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+# USB-logging houdt de GPIO-UART beschikbaar voor de sensor.
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+# P1 bridge TX is GPIO4 (packages/w1mc-p1.yaml in de fabrikantrepository).
+# Deze watermeterversie gebruikt geen P1-UART. Idle HIGH dooft de uitgangsled.
+# Voor de overige hardware-initialisatie zetten; geen gebruikersschakelaar.
+switch:
+  - platform: gpio
+    id: w1mc_p1_tx_idle
+    internal: true
+    pin:
+      number: GPIO4
+      inverted: false
+    restore_mode: ALWAYS_ON
+    setup_priority: 1000
+
+# Wifi instellen via USB Improv of het tijdelijke toegangspunt en captive portal.
+# Gebruik provisionering zodat lang drukken de opgeslagen wifi kan wissen.
+# Geen vaste ssid/password in deze YAML: die worden bij iedere boot herladen.
+wifi:
+  id: w1mc_wifi
+  power_save_mode: none
+  # Blijf bij wifi-uitval zelfstandig meten, net als bij een ontbrekende API.
+  reboot_timeout: 0s
+  ap:
+    ssid: ${device_name}
+    ap_timeout: 15s
+
+captive_portal:
+
+improv_serial:
+  next_url: http://{{ip_address}}
+
+# WS2812 achter de knop: GPIO8, GRB volgens de W1MC-hardwarebasis.
+light:
+  - platform: esp32_rmt_led_strip
+    id: w1mc_status_led
+    internal: true
+    pin:
+      number: GPIO8
+      ignore_strapping_warning: true
+    num_leds: 1
+    chipset: WS2812
+    channel_colors: GRB
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+
+globals:
+  - id: w1mc_button_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: w1mc_button_pressed_at
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
+# Actief-lage knop op GPIO9: <5s blauw/herstart, >=5s rood/wifi wissen/herstart.
+# De actie gebeurt uitsluitend bij loslaten; meterstand en kalibratie blijven.
+binary_sensor:
+  - platform: gpio
+    id: w1mc_push_button
+    internal: true
+    use_interrupt: false
+    pin:
+      number: GPIO9
+      inverted: true
+      ignore_strapping_warning: true
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      then:
+        - lambda: |-
+            id(w1mc_button_pressed_at) = millis();
+            id(w1mc_button_active) = true;
+        - script.execute: w1mc_update_status_led
+    on_release:
+      then:
+        # Negeer de initiele losgelaten toestand bij opstarten.
+        - if:
+            condition:
+              lambda: 'return id(w1mc_button_active);'
+            then:
+              - if:
+                  condition:
+                    lambda: 'return (uint32_t) (millis() - id(w1mc_button_pressed_at)) >= 5000U;'
+                  then:
+                    - if:
+                        condition:
+                          lambda: 'return w1mc_clear_provisioned_wifi();'
+                        then:
+                          - button.press: watermeter_restart
+                        else:
+                          - logger.log:
+                              level: ERROR
+                              format: "Wifi wissen mislukt; geen herstart uitgevoerd"
+                  else:
+                    - button.press: watermeter_restart
+              - lambda: 'id(w1mc_button_active) = false;'
+
+# Hoogste prioriteit eerst. Werkt ook zonder Home Assistant.
+# Wifi ontbreekt: blauw knipperend; opslagfout: paars; sensor weg: rood
+# knipperend; ongeldige/inlerende meting: geel; stand controleren: cyaan;
+# alles gereed en bevestigd: groen. Helderheid op verzoek 100%.
+interval:
+  - interval: 100ms
+    then:
+      - script.execute: w1mc_update_status_led
+
+script:
+  - id: w1mc_update_status_led
+    then:
+      - lambda: |-
+          const bool blink_on = (millis() / 500U) % 2U == 0U;
+          float red = 0.0f, green = 0.0f, blue = 0.0f;
+          bool blinking = false;
+          if (id(w1mc_button_active)) {
+            if ((uint32_t) (millis() - id(w1mc_button_pressed_at)) >= 5000U)
+              red = 1.0f;
+            else
+              blue = 1.0f;
+          } else if (!id(w1mc_wifi).is_connected()) {
+            blue = 1.0f;
+            blinking = true;
+          } else if (id(watermeter_storage_problem).has_state() &&
+                     id(watermeter_storage_problem).state) {
+            red = 1.0f; blue = 1.0f;
+          } else if (!id(watermeter_sensor_connected).has_state() ||
+                     !id(watermeter_sensor_connected).state) {
+            red = 1.0f;
+            blinking = true;
+          } else if (!id(watermeter_measurement_valid).has_state() ||
+                     !id(watermeter_measurement_valid).state) {
+            red = 1.0f; green = 1.0f;
+          } else if (!id(watermeter_interrupted).has_state() ||
+                     id(watermeter_interrupted).state) {
+            green = 1.0f; blue = 1.0f;
+          } else {
+            green = 1.0f;
+          }
+          auto call = id(w1mc_status_led).make_call();
+          call.set_state(!blinking || blink_on);
+          call.set_rgb(red, green, blue);
+          call.set_brightness(1.0f);
+          call.set_transition_length(0);
+          call.perform();

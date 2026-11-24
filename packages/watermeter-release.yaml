@@ -1,0 +1,160 @@
+# Gedeelde productconfiguratie voor Ultra X2 en W1MC.
+# STM32 1.0.0 / BINARY1; hardware en netwerk staan in de apparaat-YAML.
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  min_version: 2026.9.1
+  # Iedere hardwarevariant heeft een eigen bouwmap.
+  build_path: ${release_build_path}
+  comment: "Watermeter nieuwe stijl - ${product_version}"
+  project:
+    name: smartstuff.watermeter
+    version: ${product_version}
+  on_boot:
+    priority: -100
+    then:
+      - text_sensor.template.publish:
+          id: product_firmware_version
+          state: ${product_version}
+
+# Rustige logging voor dagelijks gebruik en de duurproef.
+logger:
+  level: INFO
+
+# Zelfstandige meting blijft werken zonder Home Assistant-verbinding.
+api:
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+
+web_server:
+  port: 80
+  local: true
+  log: false
+
+uart:
+  id: sensor_uart
+  rx_pin:
+    number: ${sensor_rx}
+    inverted: false
+  baud_rate: 115200
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  rx_buffer_size: 4096
+
+sensor:
+  - platform: optical_water_meter_uart
+    id: water_meter_sensor
+    uart_id: sensor_uart
+    update_interval: 1s
+    # Bewust hetzelfde opslagformaat/-ID als de STM32-primaire testversie.
+    storage_id: 0x55415231
+    protocol: BINARY1
+    log_raw_frames: false
+    meter_reading:
+      name: "Meterstand"
+    # Beschikbaar voor fysieke controle door gebruiker en tijdens duurproef.
+    test_liters:
+      name: "Proefverbruik"
+    calibration_status:
+      name: "Kalibratiestatus"
+    measurement_valid:
+      id: watermeter_measurement_valid
+      name: "Meetkwaliteit goed"
+    sensor_connected:
+      id: watermeter_sensor_connected
+      name: "Sensor verbonden"
+      device_class: connectivity
+    interrupted:
+      id: watermeter_interrupted
+      name: "Meterstand controleren"
+      device_class: problem
+    storage_problem:
+      id: watermeter_storage_problem
+      name: "Opslagprobleem"
+      device_class: problem
+    # Beperkte servicediagnose; optische RAW-kanalen en fase zijn weggelaten.
+    rejected_transitions:
+      name: "Gemiste of ongeldige overgangen"
+    invalid_pairs:
+      name: "Ongeldige meetparen"
+    parse_errors:
+      name: "UART ongeldige berichten"
+    crc_errors:
+      name: "UART CRC fouten"
+    framing_errors:
+      name: "UART framing fouten"
+    sequence_errors:
+      name: "UART volgorde fouten"
+    frame_gaps:
+      name: "UART ontbrekende berichten"
+    protocol_errors:
+      name: "UART protocol fouten"
+    unknown_frames:
+      name: "UART onbekende berichten"
+    received_frames:
+      name: "UART ontvangen berichten"
+    raw_gaps:
+      name: "UART ontbrekende RAW metingen"
+    adc_errors:
+      name: "STM32 ADC fouten"
+    uart_errors:
+      name: "STM32 UART fouten"
+    format_errors:
+      name: "STM32 format fouten"
+    store_errors:
+      name: "STM32 opslagfouten"
+    boot:
+      name: "STM32 bootnummer"
+    calibration_restored:
+      name: "STM32 kalibratie hersteld"
+    sensor_identity:
+      name: "STM32 identiteit"
+
+  - platform: uptime
+    name: "Uptime"
+    entity_category: diagnostic
+
+button:
+  - platform: template
+    name: "Reset proefteller"
+    entity_category: config
+    on_press:
+      - lambda: 'id(water_meter_sensor).reset_test();'
+  - platform: restart
+    id: watermeter_restart
+    name: "Herstart"
+
+# Laadt ook de binary_sensor-basis voor de statussen uit de UART-ontvanger.
+# Geen aparte verbinding-indicator op de gebruikerspagina: Sensor verbonden
+# hierboven beschrijft de verbinding die voor de meting van belang is.
+binary_sensor:
+  - platform: status
+    id: api_connection
+    internal: true
+
+number:
+  - platform: template
+    name: "Meterstand instellen"
+    entity_category: config
+    unit_of_measurement: "m³"
+    min_value: 0
+    max_value: 99999
+    step: 0.001
+    mode: box
+    update_interval: 1s
+    lambda: 'return id(water_meter_sensor).get_meter_m3();'
+    set_action:
+      - lambda: 'id(water_meter_sensor).set_meter_m3(x);'
+
+text_sensor:
+  - platform: template
+    id: product_firmware_version
+    name: "Firmware versie"
+    entity_category: diagnostic
+    update_interval: never
+  - platform: version
+    name: "ESPHome versie"
+    hide_timestamp: true
